@@ -32,5 +32,5 @@ int ws2812b_IsReady(void);
 
 void ws2812b_SendRGB(RGB_t *rgb, unsigned count);
 void ws2812b_SendHSV(HSV_t *hsv, unsigned count);
-
+void ws2812b_SendHEX(HEX_t *hsv, unsigned count);
 #endif //__WS2812B_H

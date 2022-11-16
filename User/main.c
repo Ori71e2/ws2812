@@ -2,7 +2,7 @@
 #include "delay.h"
 #include "ws2812b.h"
 
-#define NUM_LEDS    60
+#define NUM_LEDS    24
 
 RGB_t leds[NUM_LEDS];
 HSV_t leds2[NUM_LEDS];

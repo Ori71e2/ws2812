@@ -153,6 +153,26 @@ static void SrcFilterHSV(void **src, PWM_t **pwm, unsigned *count, unsigned size
   *pwm = p;
 }
 
+static void SrcFilterHEX(void **src, PWM_t **pwm, unsigned *count, unsigned size)
+{
+  HEX_t *hex = *src;
+  PWM_t *p = *pwm;
+
+  *count -= size;
+
+  while (size--)
+  {
+    RGB_t rgb;
+
+    HEX2RGB(*hex, &rgb);
+		hex++;
+    RGB2PWM(&rgb, p++);
+  }
+
+  *src = hex;
+  *pwm = p;
+}
+
 static void DMASend(SrcFilter_t *filter, void *src, unsigned count)
 {
   if (!DMABusy)
@@ -325,4 +345,9 @@ void ws2812b_SendRGB(RGB_t *rgb, unsigned count)
 void ws2812b_SendHSV(HSV_t *hsv, unsigned count)
 {
   DMASend(&SrcFilterHSV, hsv, count);
+}
+
+void ws2812b_SendHEX(HEX_t *hex, unsigned count)
+{
+  DMASend(&SrcFilterHEX, hex, count);
 }

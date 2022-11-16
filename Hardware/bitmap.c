@@ -24,6 +24,13 @@
 
 #include "bitmap.h"
 
+void HEX2RGB(HEX_t hex, RGB_t *rgb)
+{
+  rgb->r = ((hex >> 16) & 0xFF) / 255;
+  rgb->g = ((hex >> 8) & 0xFF) / 255;
+  rgb->b = ((hex) & 0xFF) / 255;
+}
+
 void HSV2RGB(HSV_t *hsv, RGB_t *rgb)
 {
   if (!hsv->v)
@@ -89,4 +96,35 @@ void HSV2RGB(HSV_t *hsv, RGB_t *rgb)
       rgb->b = middle;
     }
   }
+}
+
+void RGB2HSV(RGB_t *rgb, HSV_t *hsv)
+{
+    uint8_t rgbMin, rgbMax;
+
+    rgbMin = rgb->r < rgb->g ? (rgb->r < rgb->b ? rgb->r : rgb->b) : (rgb->g < rgb->b ? rgb->g : rgb->b);
+    rgbMax = rgb->r > rgb->g ? (rgb->r > rgb->b ? rgb->r : rgb->b) : (rgb->g > rgb->b ? rgb->g : rgb->b);
+    
+    hsv->v = rgbMax;
+    if (hsv->v == 0)
+    {
+        hsv->h = 0;
+        hsv->s = 0;
+        return;
+    }
+
+    hsv->s = 255 * (uint32_t)(rgbMax - rgbMin) / hsv->v;
+    if (hsv->s == 0)
+    {
+        hsv->h = 0;
+        return;
+    }
+
+    if (rgbMax == rgb->r)
+        hsv->h = 0 + 43 * (rgb->g - rgb->b) / (rgbMax - rgbMin);
+    else if (rgbMax == rgb->g)
+        hsv->h = 85 + 43 * (rgb->b - rgb->r) / (rgbMax - rgbMin);
+    else
+        hsv->h = 171 + 43 * (rgb->r - rgb->g) / (rgbMax - rgbMin);
+    return;
 }
