@@ -42,5 +42,6 @@ typedef uint32_t HEX_t;
 
 void HSV2RGB(HSV_t *hsv, RGB_t *rgb);
 void HEX2RGB(HEX_t hex, RGB_t *rgb);
+void RGB2HEX(RGB_t *rgb, HEX_t *hex);
 void RGB2HSV(RGB_t *rgb, HSV_t *hsv);
 #endif //__BITMAP_H

@@ -26,11 +26,14 @@
 
 void HEX2RGB(HEX_t hex, RGB_t *rgb)
 {
-  rgb->r = ((hex >> 16) & 0xFF) / 255;
-  rgb->g = ((hex >> 8) & 0xFF) / 255;
-  rgb->b = ((hex) & 0xFF) / 255;
+  rgb->r = ((hex >> 16) & 0xFF);
+  rgb->g = ((hex >> 8) & 0xFF);
+  rgb->b = ((hex) & 0xFF);
 }
-
+void RGB2HEX(RGB_t *rgb, HEX_t *hex)
+{
+	*hex = (rgb->r << 16) + (rgb->g << 8) + (rgb->b);
+}
 void HSV2RGB(HSV_t *hsv, RGB_t *rgb)
 {
   if (!hsv->v)

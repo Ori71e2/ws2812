@@ -1,11 +1,12 @@
 #include "stm32f10x.h"                  // Device header
 #include "delay.h"
 #include "ws2812b.h"
-
-#define NUM_LEDS    24
+#include "led.h"
+#define NUM_LEDS    60
 
 RGB_t leds[NUM_LEDS];
 HSV_t leds2[NUM_LEDS];
+HEX_t leds3[NUM_LEDS];
 int main() {
   ws2812b_Init();
   while (1)
@@ -13,7 +14,38 @@ int main() {
 		while (!ws2812b_IsReady()) { }; // wait
     //
     // Fill leds buffer
+		/*
+		for (int i = 0; i < NUM_LEDS; i++)
+		{
+			leds[i].r = 255;
+			leds[i].g = 0;
+			leds[i].b = 0;
+		}
+    led_Show_RGB(leds, NUM_LEDS);
+		delay_ms(500);
+		for (int i = 0; i < NUM_LEDS; i++)
+		{
+			led_Bright_RGB(&leds[i], 20);
+		}
+    ws2812b_SendRGB(leds, NUM_LEDS);
+		delay_ms(500);
+		*/
+		for (int i = 0; i < NUM_LEDS; i++)
+		{
+			leds3[i] = 0xffff00;
+		}
+    led_Show_HEX(leds3, NUM_LEDS);
+		delay_ms(500);
+		for (int i = 0; i < NUM_LEDS; i++)
+		{
+			led_Bright_HEX(&leds3[i], 20);
+		}
+    led_Show_HEX(leds3, NUM_LEDS);
+		delay_ms(500);
+		led_Clear_HEX(leds3, NUM_LEDS);
+		delay_ms(500);
     //
+		/*
     // ÏÔÊ¾ºìÉ«
 		for (int i = 0; i < NUM_LEDS; i++)
 		{
@@ -118,5 +150,6 @@ int main() {
 			ws2812b_SendHSV(leds2, NUM_LEDS);
 			delay_ms(50);
 		}
+		*/
   }
 }
