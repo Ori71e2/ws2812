@@ -30,6 +30,28 @@ int main() {
     ws2812b_SendRGB(leds, NUM_LEDS);
 		delay_ms(500);
 		*/
+		led_Fill_Gradient_HEX(leds3, NUM_LEDS, HEX(0xff0000), HEX(0x00ff00));
+		led_Show_HEX(leds3, NUM_LEDS);
+		/*
+		led_Fill_Gradient_RGB(leds, NUM_LEDS, RGB(255, 255, 0), RGB(0, 0, 255));
+		led_Show_RGB(leds, NUM_LEDS);
+		delay_ms(500);
+    led_Shut_RGB(leds, NUM_LEDS);
+		delay_ms(500);
+		*/
+		//led_Fill_Gradient_HEX(leds3, NUM_LEDS, HEX(0xff0000), HEX(0x00ff00));
+		//led_Show_HEX(leds3, NUM_LEDS);
+		//led_Fill_Solid_RGB(leds, NUM_LEDS, RGB(255, 0, 0));
+		//led_Show_RGB(leds, NUM_LEDS);
+		/*
+		delay_ms(500);
+		led_Fill_Solid_RGB(leds+10, 10, RGB(255, 0, 0));
+		led_Show_RGB(leds, NUM_LEDS);
+		delay_ms(500);
+		led_Fill_Solid_HEX(leds3+20, 10, 0x00ff00);
+		led_Show_HEX(leds3, NUM_LEDS);
+		*/
+		/*
 		for (int i = 0; i < NUM_LEDS; i++)
 		{
 			leds3[i] = 0xffff00;
@@ -44,6 +66,7 @@ int main() {
 		delay_ms(500);
 		led_Clear_HEX(leds3, NUM_LEDS);
 		delay_ms(500);
+		*/
     //
 		/*
     // ÏÔÊ¾ºìÉ«
