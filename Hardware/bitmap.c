@@ -34,6 +34,20 @@ void RGB2HEX(RGB_t *rgb, HEX_t *hex)
 {
 	*hex = (rgb->r << 16) + (rgb->g << 8) + (rgb->b);
 }
+
+void HEX2HSV(HEX_t hex, HSV_t *hsv)
+{
+	RGB_t rgb;
+	HEX2RGB(hex, &rgb);
+	RGB2HSV(&rgb, hsv);
+}
+
+void HSV2HEX(HSV_t *hsv, HEX_t *hex)
+{
+	RGB_t rgb;
+	HSV2RGB(hsv, &rgb);
+	RGB2HEX(&rgb, hex);
+}
 void HSV2RGB(HSV_t *hsv, RGB_t *rgb)
 {
   if (!hsv->v)
@@ -131,3 +145,4 @@ void RGB2HSV(RGB_t *rgb, HSV_t *hsv)
         hsv->h = 171 + 43 * (rgb->r - rgb->g) / (rgbMax - rgbMin);
     return;
 }
+

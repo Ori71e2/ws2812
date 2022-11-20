@@ -176,14 +176,104 @@ void led_Fill_Gradient_RGB(RGB_t *start, unsigned count, RGB_t startColor, RGB_t
 	(start + count - 1)->b = endColor.b;
 }
 
+void led_Fill_Gradient_HSV(HSV_t *start, unsigned count, HSV_t startColor, HSV_t endColor)
+{
+	RGB_t rgbStart[count];
+	RGB_t rgbStartColor;
+	RGB_t rgbEndColor;
+	HSV2RGB(&startColor, &rgbStartColor);
+	HSV2RGB(&endColor, &rgbEndColor);
+	led_Fill_Gradient_RGB(rgbStart, count, rgbStartColor, rgbEndColor);
+	for (int i = 1; i < count - 1; i++)
+	{
+		RGB2HSV((rgbStart+i), (start + i));
+	}
+	start->h = startColor.h;
+	start->s = startColor.s;
+	start->v = startColor.v;
+	(start + count - 1)->h = endColor.h;
+	(start + count - 1)->s = endColor.s;
+	(start + count - 1)->v = endColor.v;
+}
+
 void led_Fill_Gradient_HEX(HEX_t *start, unsigned count, HEX_t startColor, HEX_t endColor)
 {
-	int32_t gap;
-	gap = endColor - startColor;
+	RGB_t rgbStart[count];
+	RGB_t rgbStartColor;
+	RGB_t rgbEndColor;
+	HEX2RGB(startColor, &rgbStartColor);
+	HEX2RGB(endColor, &rgbEndColor);
+	led_Fill_Gradient_RGB(rgbStart, count, rgbStartColor, rgbEndColor);
+	for (int i = 1; i < count - 1; i++)
+	{
+		RGB2HEX(&rgbStart[i], (start + i));
+	}
+	start[0] = startColor;
+	start[count - 1] = endColor;
+}
+
+void led_Fill_Line_HEX(HEX_t *start, unsigned count, HEX_t startColor, HEX_t endColor)
+{
 	for (int32_t i = 1; i < count - 1; i++)
 	{
 		*(start + i) = (uint32_t)((int32_t)startColor + ((int32_t)endColor - (int32_t)startColor) / ((int32_t)count - 1) * i);
 	}
 	*start = startColor;
+	*(start + count - 1) = endColor;
+}
+
+void led_Fill_Rainbow_HSV(HSV_t *start, unsigned count, HSV_t startColor, HSV_t endColor)
+{
+	int32_t h, s, v;
+	for (int32_t i = 1; i < count - 1; i++)
+	{
+		h = ((int32_t)(startColor.h) + ((int32_t)endColor.h - (int32_t)startColor.h) * i / ((int32_t)count - 1));
+		s = ((int32_t)(startColor.s) + ((int32_t)endColor.s - (int32_t)startColor.s) * i / ((int32_t)count - 1));
+		v = ((int32_t)(startColor.v) + ((int32_t)endColor.v - (int32_t)startColor.v) * i / ((int32_t)count - 1));
+		(start + i)->h = (uint8_t)(h);
+		(start + i)->s = (uint8_t)(s);
+		(start + i)->v = (uint8_t)(v);
+	}
+	start->h = startColor.h;
+	start->s = startColor.s;
+	start->v = startColor.v;
+	(start + count - 1)->h = endColor.h;
+	(start + count - 1)->s = endColor.s;
+	(start + count - 1)->v = endColor.v;
+}
+
+void led_Fill_Rainbow_RGB(RGB_t *start, unsigned count, RGB_t startColor, RGB_t endColor)
+{
+	HSV_t hsvStart[count];
+	HSV_t hsvStartColor;
+	HSV_t hsvEndColor;
+	RGB2HSV(&startColor, &hsvStartColor);
+	RGB2HSV(&endColor, &hsvEndColor);
+	led_Fill_Rainbow_HSV(hsvStart, count, hsvStartColor, hsvEndColor);
+	for (int i = 1; i < count - 1; i++)
+	{
+		HSV2RGB((hsvStart+i), (start + i));
+	}
+	start->r = startColor.r;
+	start->g = startColor.g;
+	start->b = startColor.b;
+	(start + count - 1)->r = endColor.r;
+	(start + count - 1)->g = endColor.g;
+	(start + count - 1)->b = endColor.b;
+}
+
+void led_Fill_Rainbow_HEX(HEX_t *start, unsigned count, HEX_t startColor, HEX_t endColor)
+{
+	HSV_t hsvStart[count];
+	HSV_t hsvStartColor;
+	HSV_t hsvEndColor;
+	HEX2HSV(startColor, &hsvStartColor);
+	HEX2HSV(endColor, &hsvEndColor);
+	led_Fill_Rainbow_HSV(hsvStart, count, hsvStartColor, hsvEndColor);
+	for (int i = 1; i < count - 1; i++)
+	{
+		HSV2HEX((hsvStart+i), (start + i));
+	}
+	start[0] = startColor;
 	*(start + count - 1) = endColor;
 }

@@ -28,9 +28,16 @@ void led_Bright_HEX(HEX_t *ledHex, uint8_t bright);
 void led_Fill_Solid_RGB(RGB_t *start, unsigned count, RGB_t color);
 void led_Fill_Solid_HSV(HSV_t *start, unsigned count, HSV_t color);
 void led_Fill_Solid_HEX(HEX_t *start, unsigned count, HEX_t color);
-void led_Fill_RainBow(RGB_t *start, unsigned count, RGB_t color);
+
 void led_Fill_Gradient_RGB(RGB_t *start, unsigned count, RGB_t startColor, RGB_t endColor);
+void led_Fill_Gradient_HSV(HSV_t *start, unsigned count, HSV_t startColor, HSV_t endColor);
 void led_Fill_Gradient_HEX(HEX_t *start, unsigned count, HEX_t startColor, HEX_t endColor);
-void led_Fill_Platte();
+
+void led_Fill_Line_HEX(HEX_t *start, unsigned count, HEX_t startColor, HEX_t endColor);
+
+void led_Fill_Rainbow_HSV(HSV_t *start, unsigned count, HSV_t startColor, HSV_t endColor);
+void led_Fill_Rainbow_RGB(RGB_t *start, unsigned count, RGB_t startColor, RGB_t endColor);
+void led_Fill_Rainbow_HEX(HEX_t *start, unsigned count, HEX_t startColor, HEX_t endColor);
+// void led_Fill_Platte();
 
 #endif //__LED_H

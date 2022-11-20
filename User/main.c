@@ -30,8 +30,15 @@ int main() {
     ws2812b_SendRGB(leds, NUM_LEDS);
 		delay_ms(500);
 		*/
+		//led_Fill_Gradient_HSV(leds2, NUM_LEDS, HSV(0, 255, 255), HSV(240, 255, 255));
+		//led_Fill_Rainbow_HSV(leds2, NUM_LEDS, HSV(0, 255, 255), HSV(240, 255, 255));
+		//led_Fill_Rainbow_RGB(leds, NUM_LEDS, RGB(255, 10, 10), RGB(10, 255, 10));
+		led_Fill_Rainbow_HEX(leds3, NUM_LEDS, HEX(0xff0000), HEX(0x0000ff));
+		led_Show_HEX(leds3, NUM_LEDS);
+		/*
 		led_Fill_Gradient_HEX(leds3, NUM_LEDS, HEX(0xff0000), HEX(0x00ff00));
 		led_Show_HEX(leds3, NUM_LEDS);
+		*/
 		/*
 		led_Fill_Gradient_RGB(leds, NUM_LEDS, RGB(255, 255, 0), RGB(0, 0, 255));
 		led_Show_RGB(leds, NUM_LEDS);
