@@ -29,9 +29,93 @@ void led_Show_HEX(HEX_t *hexLeds, unsigned count)
 {
   ws2812b_SendHEX(hexLeds, count);
 }
-// clear all
-void led_Shut_RGB(RGB_t *rgbLeds, unsigned count)
+
+void led_Loop_Show_RGB(RGB_t *start, unsigned count, unsigned offset, unsigned length, unsigned delayTime)
 {
+	RGB_t rgbStart[count];
+	int i = offset;
+	while(1)
+	{
+		for (int j = 0; j < length; j++)
+		{
+			(rgbStart + (i + j - 1) % count)->r = (start + i)->r;
+			(rgbStart + (i + j - 1) % count)->g = (start + i)->g;
+			(rgbStart + (i + j - 1) % count)->b = (start + i)->b;	
+		}
+		led_Show_RGB(rgbStart, count);
+		delay_ms(delayTime);
+		for (int j = 0; j < length; j++)
+		{
+			(rgbStart + (i + j - 1) % count)->r = 0;
+			(rgbStart + (i + j - 1) % count)->g = 0;
+			(rgbStart + (i + j - 1) % count)->b = 0;	
+		}
+		i += length;
+	}
+}
+void led_Gradual_Show_RGB(RGB_t *start, unsigned count, unsigned offset, unsigned length, unsigned delayTime)
+{
+	RGB_t rgbStart[count];
+	int i = offset;
+	while(1)
+	{
+		for (int j = 0; j < length; j++)
+		{
+			(rgbStart + (i + j - 1) % count)->r = (start + i)->g;
+			(rgbStart + (i + j - 1) % count)->g = (start + i)->g;
+			(rgbStart + (i + j - 1) % count)->b = (start + i)->b;	
+		}
+		led_Show_RGB(rgbStart, count);
+		delay_ms(delayTime);
+		i += length;
+	}
+}
+
+void led_Loop_Show_HSV(HSV_t *start, unsigned count, unsigned offset, unsigned length, unsigned delayTime)
+{
+	RGB_t rgbStart[count];
+	int i = offset;
+	HSV_t tmp = HSV(0, 0, 0);
+	while(1)
+	{
+		for (int j = 0; j < length; j++)
+		{
+			 HSV2RGB((start + i), rgbStart + (i + j - 1) % count);
+		}
+		led_Show_RGB(rgbStart, count);
+		delay_ms(delayTime);
+		for (int j = 0; j < length; j++)
+		{
+			HSV2RGB(&tmp, rgbStart + (i + j - 1) % count);
+		}
+		i += length;
+	}
+}
+
+void led_Loop_Show_HEX(HEX_t *start, unsigned count, unsigned offset, unsigned length, unsigned delayTime)
+{
+	RGB_t rgbStart[count];
+	int i = offset;
+	while(1)
+	{
+		for (int j = 0; j < length; j++)
+		{
+			 HEX2RGB(*(start + i), rgbStart + (i + j - 1) % count);
+		}
+		led_Show_RGB(rgbStart, count);
+		delay_ms(delayTime);
+		for (int j = 0; j < length; j++)
+		{
+			 HEX2RGB(HEX(0x000000), rgbStart + (i + j - 1) % count);
+		}
+		i += length;
+	}
+}
+
+// clear all
+void led_Shut_RGB(unsigned count)
+{
+	RGB_t rgbLeds[count];
 	for (int i = 0; i < count; i++)
 	{
 		rgbLeds[i].r = 0;
@@ -41,8 +125,9 @@ void led_Shut_RGB(RGB_t *rgbLeds, unsigned count)
 	led_Show_RGB(rgbLeds, count);
 }
 
-void led_Shut_HSV(HSV_t *hsvLeds, unsigned count)
+void led_Shut_HSV(unsigned count)
 {
+	HSV_t hsvLeds[count];
 	for (int i = 0; i < count; i++)
 	{
 		hsvLeds[i].h = 0;
@@ -52,8 +137,9 @@ void led_Shut_HSV(HSV_t *hsvLeds, unsigned count)
 	led_Show_HSV(hsvLeds, count);
 }
 
-void led_Shut_HEX(HEX_t *hexLeds, unsigned count)
+void led_Shut_HEX(unsigned count)
 {
+	HEX_t hexLeds[count];
 	for (int i = 0; i < count; i++)
 	{
 		hexLeds[i] = 0x000000;
@@ -277,3 +363,4 @@ void led_Fill_Rainbow_HEX(HEX_t *start, unsigned count, HEX_t startColor, HEX_t 
 	start[0] = startColor;
 	*(start + count - 1) = endColor;
 }
+

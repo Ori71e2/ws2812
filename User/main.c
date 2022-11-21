@@ -43,7 +43,7 @@ int main() {
 		led_Fill_Gradient_RGB(leds, NUM_LEDS, RGB(255, 255, 0), RGB(0, 0, 255));
 		led_Show_RGB(leds, NUM_LEDS);
 		delay_ms(500);
-    led_Shut_RGB(leds, NUM_LEDS);
+    led_Shut_RGB(NUM_LEDS);
 		delay_ms(500);
 		*/
 		//led_Fill_Gradient_HEX(leds3, NUM_LEDS, HEX(0xff0000), HEX(0x00ff00));
