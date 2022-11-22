@@ -254,17 +254,25 @@ void WS2812B_DMA_HANDLER(void)
 void ws2812b_Init(void)
 {
   // Turn on peripheral clock
-  RCC_APB1PeriphClockCmd(WS2812B_APB1_RCC, ENABLE);
-  RCC_APB2PeriphClockCmd(WS2812B_APB2_RCC, ENABLE);
-
+  /*
+    RCC_APB1Periph_TIM4
+    Peripherals 外设
+    APB (Advanced Peripheral Bus) 作为高级外设总线是AMBA协议之一，也是最基本的总线协议。
+    2个高级定时器（1，8），4个普通定时器（2，3，4，5），2个基本定时器（6，7），2个看门狗定时器，1个系统嘀嗒定时器
+    普通定时器，具有测量输入信号的脉冲长度( 输入捕获) 或者产生输出波形( 输出比较和PWM)
+  */
+  RCC_APB1PeriphClockCmd(WS2812B_APB1_RCC, ENABLE);  // 自定义
+  // RCC_APB2Periph_GPIOB， GPIO端口使能
+  RCC_APB2PeriphClockCmd(WS2812B_APB2_RCC, ENABLE);  // 自定义
+  // RCC_AHBPeriph_DMA1, AHB=Advanced High Performance Bus，高级高性能总线。
   RCC_AHBPeriphClockCmd(WS2812B_AHB_RCC, ENABLE);
 
   // Initialize GPIO pin
   GPIO_InitTypeDef GPIO_InitStruct;
 
-  //GPIO_StructInit(&GPIO_InitStruct);
-
-  GPIO_InitStruct.GPIO_Pin = WS2812B_GPIO_PIN;
+  // GPIO_StructInit(&GPIO_InitStruct);
+  // GPIO_Pin_6
+  GPIO_InitStruct.GPIO_Pin = WS2812B_GPIO_PIN;  // 自定义
   GPIO_InitStruct.GPIO_Speed = GPIO_Speed_50MHz;
   GPIO_InitStruct.GPIO_Mode = GPIO_Mode_AF_PP;
 
@@ -276,8 +284,11 @@ void ws2812b_Init(void)
   //TIM_TimeBaseStructInit(&TIM_TimeBaseInitStruct);
   // 72000000 / (72000000 / 24000000) = 24000000
   // 1 / 24000000 * 30 = 1.25us  = 0.85us + 0.4us
+  // SystemCoreClock SYSCLK_FREQ_72MHz  72000000
+  // WS2812B_FREQUENCY       24000000
   TIM_TimeBaseInitStruct.TIM_Prescaler = (SystemCoreClock / WS2812B_FREQUENCY) - 1;
   TIM_TimeBaseInitStruct.TIM_CounterMode = TIM_CounterMode_Up;
+  // WS2812B_PERIOD          30
   TIM_TimeBaseInitStruct.TIM_Period = WS2812B_PERIOD - 1;
   TIM_TimeBaseInitStruct.TIM_ClockDivision = TIM_CKD_DIV1;
 
@@ -293,15 +304,18 @@ void ws2812b_Init(void)
   TIM_OCInitStruct.TIM_Pulse = 0;
   TIM_OCInitStruct.TIM_OCPolarity = TIM_OCPolarity_High;
 
-  WS2812B_TIM_OCINIT(WS2812B_TIM, &TIM_OCInitStruct);
+  // WS2812B_TIM TIM4
+	// WS2812B_TIM_OCINIT TIM_OC1Init 初始化CH1
+  WS2812B_TIM_OCINIT(WS2812B_TIM, &TIM_OCInitStruct);  // 自定义
+  // WS2812B_TIM_OCPRELOAD TIM_OC1PreloadConfig  CH1预装载使能
   WS2812B_TIM_OCPRELOAD(WS2812B_TIM, TIM_OCPreload_Enable);
 
   // Initialize DMA channel
   DMA_InitTypeDef DMA_InitStruct;
 
   //DMA_StructInit(&DMA_InitStruct);
-
-  DMA_InitStruct.DMA_PeripheralBaseAddr = (uint32_t) & WS2812B_TIM_DMA_CCR;
+  // WS2812B_TIM_DMA_CCR     (WS2812B_TIM->CCR1) (TIM4->CCR1)  TIM4((TIM_TypeDef *)
+  DMA_InitStruct.DMA_PeripheralBaseAddr = (uint32_t) & WS2812B_TIM_DMA_CCR;  // 自定义
   DMA_InitStruct.DMA_MemoryBaseAddr = (uint32_t) DMABuffer;
   DMA_InitStruct.DMA_DIR = DMA_DIR_PeripheralDST;
   DMA_InitStruct.DMA_BufferSize = sizeof(DMABuffer) / sizeof(uint16_t);
@@ -310,13 +324,15 @@ void ws2812b_Init(void)
   DMA_InitStruct.DMA_PeripheralDataSize = DMA_PeripheralDataSize_HalfWord;
   DMA_InitStruct.DMA_MemoryDataSize = DMA_MemoryDataSize_HalfWord;
   DMA_InitStruct.DMA_Mode = DMA_Mode_Circular;
-  DMA_InitStruct.DMA_Priority = DMA_Priority_High;
+	// DMA优先级
+  DMA_InitStruct.DMA_Priority = DMA_Priority_High;  // 考虑自定义
   DMA_InitStruct.DMA_M2M = DMA_M2M_Disable;
 
   DMA_Init(WS2812B_DMA_CHANNEL, &DMA_InitStruct);
 
   // Turn on timer DMA requests
-  TIM_DMACmd(WS2812B_TIM, WS2812B_TIM_DMA_CC, ENABLE);
+	// WS2812B_TIM_DMA_CC      TIM_DMA_CC1
+  TIM_DMACmd(WS2812B_TIM, WS2812B_TIM_DMA_CC, ENABLE); // 自定义,与CCR1对应
 
   // Initialize DMA interrupt
   NVIC_InitTypeDef NVIC_InitStruct;
