@@ -30,17 +30,19 @@ void led_Show_HEX(HEX_t *hexLeds, unsigned count)
   ws2812b_SendHEX(hexLeds, count);
 }
 
-void led_Loop_Show_RGB(RGB_t *start, unsigned count, unsigned offset, unsigned length, unsigned delayTime)
+void led_Loop_Show_RGB(RGB_t *start, unsigned count, unsigned offset, unsigned length, unsigned delayTime, unsigned num)
 {
 	RGB_t rgbStart[count];
 	int i = offset;
-	while(1)
+	int clickTimes = count * num;
+	led_Clear_RGB(rgbStart, count);
+	while(clickTimes--)
 	{
 		for (int j = 0; j < length; j++)
 		{
-			(rgbStart + (i + j - 1) % count)->r = (start + i)->r;
-			(rgbStart + (i + j - 1) % count)->g = (start + i)->g;
-			(rgbStart + (i + j - 1) % count)->b = (start + i)->b;	
+			(rgbStart + (i + j - 1) % count)->r = (start + (i + j - 1) % count)->r;
+			(rgbStart + (i + j - 1) % count)->g = (start + (i + j - 1) % count)->g;
+			(rgbStart + (i + j - 1) % count)->b = (start + (i + j - 1) % count)->b;	
 		}
 		led_Show_RGB(rgbStart, count);
 		delay_ms(delayTime);
@@ -57,13 +59,15 @@ void led_Gradual_Show_RGB(RGB_t *start, unsigned count, unsigned offset, unsigne
 {
 	RGB_t rgbStart[count];
 	int i = offset;
-	while(1)
+	int clickTimes = count * 1;
+	led_Clear_RGB(rgbStart, count);
+	while(clickTimes--)
 	{
 		for (int j = 0; j < length; j++)
 		{
-			(rgbStart + (i + j - 1) % count)->r = (start + i)->g;
-			(rgbStart + (i + j - 1) % count)->g = (start + i)->g;
-			(rgbStart + (i + j - 1) % count)->b = (start + i)->b;	
+			(rgbStart + (i + j - 1) % count)->r = (start + (i + j - 1) % count)->r;
+			(rgbStart + (i + j - 1) % count)->g = (start + (i + j - 1) % count)->g;
+			(rgbStart + (i + j - 1) % count)->b = (start + (i + j - 1) % count)->b;	
 		}
 		led_Show_RGB(rgbStart, count);
 		delay_ms(delayTime);
@@ -71,16 +75,18 @@ void led_Gradual_Show_RGB(RGB_t *start, unsigned count, unsigned offset, unsigne
 	}
 }
 
-void led_Loop_Show_HSV(HSV_t *start, unsigned count, unsigned offset, unsigned length, unsigned delayTime)
+void led_Loop_Show_HSV(HSV_t *start, unsigned count, unsigned offset, unsigned length, unsigned delayTime, unsigned num)
 {
 	RGB_t rgbStart[count];
 	int i = offset;
 	HSV_t tmp = HSV(0, 0, 0);
-	while(1)
+	int clickTimes = count * num;
+	led_Clear_RGB(rgbStart, count);
+	while(clickTimes--)
 	{
 		for (int j = 0; j < length; j++)
 		{
-			 HSV2RGB((start + i), rgbStart + (i + j - 1) % count);
+			 HSV2RGB((start + (i + j - 1) % count), rgbStart + (i + j - 1) % count);
 		}
 		led_Show_RGB(rgbStart, count);
 		delay_ms(delayTime);
@@ -92,15 +98,36 @@ void led_Loop_Show_HSV(HSV_t *start, unsigned count, unsigned offset, unsigned l
 	}
 }
 
-void led_Loop_Show_HEX(HEX_t *start, unsigned count, unsigned offset, unsigned length, unsigned delayTime)
+void led_Gradul_Show_HSV(HSV_t *start, unsigned count, unsigned offset, unsigned length, unsigned delayTime)
 {
 	RGB_t rgbStart[count];
 	int i = offset;
-	while(1)
+	HSV_t tmp = HSV(0, 0, 0);
+	int clickTimes = count * 1;
+	led_Clear_RGB(rgbStart, count);
+	while(clickTimes--)
 	{
 		for (int j = 0; j < length; j++)
 		{
-			 HEX2RGB(*(start + i), rgbStart + (i + j - 1) % count);
+			 HSV2RGB((start + (i + j - 1) % count), rgbStart + (i + j - 1) % count);
+		}
+		led_Show_RGB(rgbStart, count);
+		delay_ms(delayTime);
+		i += length;
+	}
+}
+
+void led_Loop_Show_HEX(HEX_t *start, unsigned count, unsigned offset, unsigned length, unsigned delayTime, unsigned num)
+{
+	RGB_t rgbStart[count];
+	int i = offset;
+	int clickTimes = count * num;
+	led_Clear_RGB(rgbStart, count);
+	while(clickTimes--)
+	{
+		for (int j = 0; j < length; j++)
+		{
+			 HEX2RGB(*(start + (i + j - 1) % count), rgbStart + (i + j - 1) % count);
 		}
 		led_Show_RGB(rgbStart, count);
 		delay_ms(delayTime);
@@ -108,6 +135,24 @@ void led_Loop_Show_HEX(HEX_t *start, unsigned count, unsigned offset, unsigned l
 		{
 			 HEX2RGB(HEX(0x000000), rgbStart + (i + j - 1) % count);
 		}
+		i += length;
+	}
+}
+
+void led_Gradul_Show_HEX(HEX_t *start, unsigned count, unsigned offset, unsigned length, unsigned delayTime)
+{
+	RGB_t rgbStart[count];
+	int i = offset;
+	int clickTimes = count * 1;
+	led_Clear_RGB(rgbStart, count);
+	while(clickTimes--)
+	{
+		for (int j = 0; j < length; j++)
+		{
+			 HEX2RGB(*(start + (i + j - 1) % count), rgbStart + (i + j - 1) % count);
+		}
+		led_Show_RGB(rgbStart, count);
+		delay_ms(delayTime);
 		i += length;
 	}
 }
