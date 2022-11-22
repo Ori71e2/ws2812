@@ -98,7 +98,7 @@ void led_Loop_Show_HSV(HSV_t *start, unsigned count, unsigned offset, unsigned l
 	}
 }
 
-void led_Gradul_Show_HSV(HSV_t *start, unsigned count, unsigned offset, unsigned length, unsigned delayTime)
+void led_Gradual_Show_HSV(HSV_t *start, unsigned count, unsigned offset, unsigned length, unsigned delayTime)
 {
 	RGB_t rgbStart[count];
 	int i = offset;
@@ -139,7 +139,7 @@ void led_Loop_Show_HEX(HEX_t *start, unsigned count, unsigned offset, unsigned l
 	}
 }
 
-void led_Gradul_Show_HEX(HEX_t *start, unsigned count, unsigned offset, unsigned length, unsigned delayTime)
+void led_Gradual_Show_HEX(HEX_t *start, unsigned count, unsigned offset, unsigned length, unsigned delayTime)
 {
 	RGB_t rgbStart[count];
 	int i = offset;
