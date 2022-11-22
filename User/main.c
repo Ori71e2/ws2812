@@ -8,10 +8,10 @@ RGB_t ledsRGB[NUM_LEDS];
 HSV_t ledsHSV[NUM_LEDS];
 HEX_t ledsHEX[NUM_LEDS];
 int main() {
-  ws2812b_Init();
+  led_Init();
   while (1)
 	{
-		while (!ws2812b_IsReady()) { }; // wait
+		while (!led_IsReady()) { }; // wait
     //
     // Fill ledsRGB buffer
 		led_Fill_Rainbow_RGB(ledsRGB, NUM_LEDS, RGB(255, 10, 10), RGB(10, 255, 10));
