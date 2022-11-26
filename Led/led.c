@@ -15,59 +15,84 @@ void led_Add(void)
 
 }
 // show all
-void led_Show_RGB(RGB_t *rgbLeds, unsigned count)
+void led_Show_RGB(RGB_t *rgbLeds, uint32_t count)
 {
   ws2812b_SendRGB(rgbLeds, count);
 }
 
-void led_Show_HSV(HSV_t *hsvLeds, unsigned count)
+void led_Show_HSV(HSV_t *hsvLeds, uint32_t count)
 {
   ws2812b_SendHSV(hsvLeds, count);
 }
 
-void led_Show_HEX(HEX_t *hexLeds, unsigned count)
+void led_Show_HEX(HEX_t *hexLeds, uint32_t count)
 {
   ws2812b_SendHEX(hexLeds, count);
 }
 
-void led_Loop_Show_RGB(RGB_t *start, unsigned count, unsigned offset, unsigned length, unsigned delayTime, unsigned num)
+void led_Loop_Show_RGB(RGB_t *start, uint32_t count, uint32_t offset, uint32_t length, uint32_t delayTime, uint32_t clickTimes)
 {
 	RGB_t rgbStart[count];
-	int i = offset;
-	int clickTimes = count * num;
+	uint32_t i = offset;
 	led_Clear_RGB(rgbStart, count);
 	while(clickTimes--)
 	{
-		for (int j = 0; j < length; j++)
+		for (uint32_t j = 0; j < length; j++)
 		{
-			(rgbStart + (i + j - 1) % count)->r = (start + (i + j - 1) % count)->r;
-			(rgbStart + (i + j - 1) % count)->g = (start + (i + j - 1) % count)->g;
-			(rgbStart + (i + j - 1) % count)->b = (start + (i + j - 1) % count)->b;	
+			(rgbStart + (i + j) % count)->r = (start + (i + j) % count)->r;
+			(rgbStart + (i + j) % count)->g = (start + (i + j) % count)->g;
+			(rgbStart + (i + j) % count)->b = (start + (i + j) % count)->b;	
 		}
 		led_Show_RGB(rgbStart, count);
 		delay_ms(delayTime);
-		for (int j = 0; j < length; j++)
+		for (uint32_t j = 0; j < length; j++)
 		{
-			(rgbStart + (i + j - 1) % count)->r = 0;
-			(rgbStart + (i + j - 1) % count)->g = 0;
-			(rgbStart + (i + j - 1) % count)->b = 0;	
+			(rgbStart + (i + j) % count)->r = 0;
+			(rgbStart + (i + j) % count)->g = 0;
+			(rgbStart + (i + j) % count)->b = 0;	
 		}
 		i += length;
 	}
 }
-void led_Gradual_Show_RGB(RGB_t *start, unsigned count, unsigned offset, unsigned length, unsigned delayTime)
+
+void led_PLoop_Show_RGB(RGB_t *start, uint32_t count, uint32_t offset, uint32_t length, uint32_t delayTime, uint32_t clickTimes)
 {
 	RGB_t rgbStart[count];
-	int i = offset;
-	int clickTimes = count * 1;
+	uint32_t i = offset;
 	led_Clear_RGB(rgbStart, count);
 	while(clickTimes--)
 	{
-		for (int j = 0; j < length; j++)
+		for (uint32_t j = 0; j < length; j++)
 		{
-			(rgbStart + (i + j - 1) % count)->r = (start + (i + j - 1) % count)->r;
-			(rgbStart + (i + j - 1) % count)->g = (start + (i + j - 1) % count)->g;
-			(rgbStart + (i + j - 1) % count)->b = (start + (i + j - 1) % count)->b;	
+			(rgbStart + (i + j) % count)->r = (start + (i + j) % count)->r;
+			(rgbStart + (i + j) % count)->g = (start + (i + j) % count)->g;
+			(rgbStart + (i + j) % count)->b = (start + (i + j) % count)->b;	
+		}
+		led_Show_RGB(rgbStart, count);
+		delay_ms(delayTime);
+		for (uint32_t j = 0; j < length; j++)
+		{
+			(rgbStart + (i + j) % count)->r = 0;
+			(rgbStart + (i + j) % count)->g = 0;
+			(rgbStart + (i + j) % count)->b = 0;	
+		}
+		i += length;
+	}
+}
+
+void led_Gradual_Show_RGB(RGB_t *start, uint32_t count, uint32_t offset, uint32_t length, uint32_t delayTime)
+{
+	RGB_t rgbStart[count];
+	uint32_t i = offset;
+	uint32_t clickTimes = count * 1;
+	led_Clear_RGB(rgbStart, count);
+	while(clickTimes--)
+	{
+		for (uint32_t j = 0; j < length; j++)
+		{
+			(rgbStart + (i + j) % count)->r = (start + (i + j) % count)->r;
+			(rgbStart + (i + j) % count)->g = (start + (i + j) % count)->g;
+			(rgbStart + (i + j) % count)->b = (start + (i + j) % count)->b;	
 		}
 		led_Show_RGB(rgbStart, count);
 		delay_ms(delayTime);
@@ -75,30 +100,47 @@ void led_Gradual_Show_RGB(RGB_t *start, unsigned count, unsigned offset, unsigne
 	}
 }
 
-void led_Loop_Show_HSV(HSV_t *start, unsigned count, unsigned offset, unsigned length, unsigned delayTime, unsigned num)
+void led_Gradual_Cover_Show_RGB(RGB_t *source, RGB_t *end, uint32_t count, uint32_t offset, uint32_t length, uint32_t delayTime)
+{
+	uint32_t i = offset;
+	uint32_t clickTimes = count / length;
+	while(clickTimes--)
+	{
+		for (int j = 0; j < length; j++)
+		{
+			(source + (i + j) % count)->r = (end + (i + j) % count)->r;
+			(source + (i + j) % count)->g = (end + (i + j) % count)->g;
+			(source + (i + j) % count)->b = (end + (i + j) % count)->b;	
+		}
+		led_Show_RGB(source, count);
+		delay_ms(delayTime);
+		i += length;
+	}
+}
+
+void led_Loop_Show_HSV(HSV_t *start, uint32_t count, uint32_t offset, uint32_t length, uint32_t delayTime, uint32_t clickTimes)
 {
 	RGB_t rgbStart[count];
 	int i = offset;
 	HSV_t tmp = HSV(0, 0, 0);
-	int clickTimes = count * num;
 	led_Clear_RGB(rgbStart, count);
 	while(clickTimes--)
 	{
 		for (int j = 0; j < length; j++)
 		{
-			 HSV2RGB((start + (i + j - 1) % count), rgbStart + (i + j - 1) % count);
+			 HSV2RGB((start + (i + j) % count), rgbStart + (i + j) % count);
 		}
 		led_Show_RGB(rgbStart, count);
 		delay_ms(delayTime);
 		for (int j = 0; j < length; j++)
 		{
-			HSV2RGB(&tmp, rgbStart + (i + j - 1) % count);
+			HSV2RGB(&tmp, rgbStart + (i + j) % count);
 		}
 		i += length;
 	}
 }
 
-void led_Gradual_Show_HSV(HSV_t *start, unsigned count, unsigned offset, unsigned length, unsigned delayTime)
+void led_Gradual_Show_HSV(HSV_t *start, uint32_t count, uint32_t offset, uint32_t length, uint32_t delayTime)
 {
 	RGB_t rgbStart[count];
 	int i = offset;
@@ -109,7 +151,7 @@ void led_Gradual_Show_HSV(HSV_t *start, unsigned count, unsigned offset, unsigne
 	{
 		for (int j = 0; j < length; j++)
 		{
-			 HSV2RGB((start + (i + j - 1) % count), rgbStart + (i + j - 1) % count);
+			 HSV2RGB((start + (i + j) % count), rgbStart + (i + j) % count);
 		}
 		led_Show_RGB(rgbStart, count);
 		delay_ms(delayTime);
@@ -117,29 +159,28 @@ void led_Gradual_Show_HSV(HSV_t *start, unsigned count, unsigned offset, unsigne
 	}
 }
 
-void led_Loop_Show_HEX(HEX_t *start, unsigned count, unsigned offset, unsigned length, unsigned delayTime, unsigned num)
+void led_Loop_Show_HEX(HEX_t *start, uint32_t count, uint32_t offset, uint32_t length, uint32_t delayTime, uint32_t clickTimes)
 {
 	RGB_t rgbStart[count];
 	int i = offset;
-	int clickTimes = count * num;
 	led_Clear_RGB(rgbStart, count);
 	while(clickTimes--)
 	{
 		for (int j = 0; j < length; j++)
 		{
-			 HEX2RGB(*(start + (i + j - 1) % count), rgbStart + (i + j - 1) % count);
+			 HEX2RGB(*(start + (i + j) % count), rgbStart + (i + j) % count);
 		}
 		led_Show_RGB(rgbStart, count);
 		delay_ms(delayTime);
 		for (int j = 0; j < length; j++)
 		{
-			 HEX2RGB(HEX(0x000000), rgbStart + (i + j - 1) % count);
+			 HEX2RGB(HEX(0x000000), rgbStart + (i + j) % count);
 		}
 		i += length;
 	}
 }
 
-void led_Gradual_Show_HEX(HEX_t *start, unsigned count, unsigned offset, unsigned length, unsigned delayTime)
+void led_Gradual_Show_HEX(HEX_t *start, uint32_t count, uint32_t offset, uint32_t length, uint32_t delayTime)
 {
 	RGB_t rgbStart[count];
 	int i = offset;
@@ -149,7 +190,7 @@ void led_Gradual_Show_HEX(HEX_t *start, unsigned count, unsigned offset, unsigne
 	{
 		for (int j = 0; j < length; j++)
 		{
-			 HEX2RGB(*(start + (i + j - 1) % count), rgbStart + (i + j - 1) % count);
+			 HEX2RGB(*(start + (i + j) % count), rgbStart + (i + j) % count);
 		}
 		led_Show_RGB(rgbStart, count);
 		delay_ms(delayTime);
@@ -158,7 +199,7 @@ void led_Gradual_Show_HEX(HEX_t *start, unsigned count, unsigned offset, unsigne
 }
 
 // clear all
-void led_Shut_RGB(unsigned count)
+void led_Shut_RGB(uint32_t count)
 {
 	RGB_t rgbLeds[count];
 	for (int i = 0; i < count; i++)
@@ -170,7 +211,7 @@ void led_Shut_RGB(unsigned count)
 	led_Show_RGB(rgbLeds, count);
 }
 
-void led_Shut_HSV(unsigned count)
+void led_Shut_HSV(uint32_t count)
 {
 	HSV_t hsvLeds[count];
 	for (int i = 0; i < count; i++)
@@ -182,7 +223,7 @@ void led_Shut_HSV(unsigned count)
 	led_Show_HSV(hsvLeds, count);
 }
 
-void led_Shut_HEX(unsigned count)
+void led_Shut_HEX(uint32_t count)
 {
 	HEX_t hexLeds[count];
 	for (int i = 0; i < count; i++)
@@ -192,31 +233,31 @@ void led_Shut_HEX(unsigned count)
 	 led_Show_HEX(hexLeds, count);
 }
 // clear all
-void led_Clear_RGB(RGB_t *rgbLeds, unsigned count)
+void led_Clear_RGB(RGB_t *rgbLeds, uint32_t count)
 {
-	for (int i = 0; i < count; i++)
+	for (uint32_t i = 0; i < count; i++)
 	{
-		rgbLeds[i].r = 0;
-		rgbLeds[i].g = 0;
-		rgbLeds[i].b = 0;
+		(rgbLeds + i)->r = 0;
+		(rgbLeds + i)->g = 0;
+		(rgbLeds + i)->b = 0;
 	}
 }
 
-void led_Clear_HSV(HSV_t *hsvLeds, unsigned count)
+void led_Clear_HSV(HSV_t *hsvLeds, uint32_t count)
 {
 	for (int i = 0; i < count; i++)
 	{
-		hsvLeds[i].h = 0;
-		hsvLeds[i].s = 0;
-		hsvLeds[i].v = 0;
+		(hsvLeds + i)->h = 0;
+		(hsvLeds + i)->s = 0;
+		(hsvLeds + i)->v = 0;
 	}
 }
 
-void led_Clear_HEX(HEX_t *hexLeds, unsigned count)
+void led_Clear_HEX(HEX_t *hexLeds, uint32_t count)
 {
 	for (int i = 0; i < count; i++)
 	{
-		hexLeds[i] = 0x000000;
+		*(hexLeds + i) = 0x000000;
 	}
 }
 
@@ -256,38 +297,35 @@ void led_Bright_HEX(HEX_t *ledHex, uint8_t bright)
 	RGB2HEX(&ledRgb, ledHex);
 }
 
-void led_Fill_Solid_RGB(RGB_t *start, unsigned count, RGB_t color)
+void led_Fill_Solid_RGB(RGB_t *start, uint32_t count, RGB_t color)
 {
-	for ( ; count > 0; count--)
+	for (int i = 0; i < count; i++)
 	{
-		start->r = color.r;
-		start->g = color.g;
-		start->b = color.b;
-		start++;
+		(start + i)->r = color.r;
+		(start + i)->g = color.g;
+		(start + i)->b = color.b;
 	}
 }
 
-void led_Fill_Solid_HSV(HSV_t *start, unsigned count, HSV_t color)
+void led_Fill_Solid_HSV(HSV_t *start, uint32_t count, HSV_t color)
 {
-	for ( ; count > 0; count--)
+	for (int i = 0; i < count; i++)
 	{
-		start->h = color.h;
-		start->s = color.s;
-		start->v = color.v;
-		start++;
+		(start + i)->h = color.h;
+		(start + i)->s = color.s;
+		(start + i)->v = color.v;
 	}
 }
 
-void led_Fill_Solid_HEX(HEX_t *start, unsigned count, HEX_t color)
+void led_Fill_Solid_HEX(HEX_t *start, uint32_t count, HEX_t color)
 {
-	for ( ; count > 0; count--)
+	for (int i = 0; i < count; i++)
 	{
-		*start = color;
-		start++;
+		*(start + i) = color;
 	}
 }
 
-void led_Fill_Gradient_RGB(RGB_t *start, unsigned count, RGB_t startColor, RGB_t endColor)
+void led_Fill_Gradient_RGB(RGB_t *start, uint32_t count, RGB_t startColor, RGB_t endColor)
 {
 	int32_t r, g, b;
 	for (int32_t i = 1; i < count - 1; i++)
@@ -307,7 +345,7 @@ void led_Fill_Gradient_RGB(RGB_t *start, unsigned count, RGB_t startColor, RGB_t
 	(start + count - 1)->b = endColor.b;
 }
 
-void led_Fill_Gradient_HSV(HSV_t *start, unsigned count, HSV_t startColor, HSV_t endColor)
+void led_Fill_Gradient_HSV(HSV_t *start, uint32_t count, HSV_t startColor, HSV_t endColor)
 {
 	RGB_t rgbStart[count];
 	RGB_t rgbStartColor;
@@ -327,7 +365,7 @@ void led_Fill_Gradient_HSV(HSV_t *start, unsigned count, HSV_t startColor, HSV_t
 	(start + count - 1)->v = endColor.v;
 }
 
-void led_Fill_Gradient_HEX(HEX_t *start, unsigned count, HEX_t startColor, HEX_t endColor)
+void led_Fill_Gradient_HEX(HEX_t *start, uint32_t count, HEX_t startColor, HEX_t endColor)
 {
 	RGB_t rgbStart[count];
 	RGB_t rgbStartColor;
@@ -343,7 +381,7 @@ void led_Fill_Gradient_HEX(HEX_t *start, unsigned count, HEX_t startColor, HEX_t
 	start[count - 1] = endColor;
 }
 
-void led_Fill_Line_HEX(HEX_t *start, unsigned count, HEX_t startColor, HEX_t endColor)
+void led_Fill_Line_HEX(HEX_t *start, uint32_t count, HEX_t startColor, HEX_t endColor)
 {
 	for (int32_t i = 1; i < count - 1; i++)
 	{
@@ -353,7 +391,7 @@ void led_Fill_Line_HEX(HEX_t *start, unsigned count, HEX_t startColor, HEX_t end
 	*(start + count - 1) = endColor;
 }
 
-void led_Fill_Rainbow_HSV(HSV_t *start, unsigned count, HSV_t startColor, HSV_t endColor)
+void led_Fill_Rainbow_HSV(HSV_t *start, uint32_t count, HSV_t startColor, HSV_t endColor)
 {
 	int32_t h, s, v;
 	for (int32_t i = 1; i < count - 1; i++)
@@ -373,7 +411,7 @@ void led_Fill_Rainbow_HSV(HSV_t *start, unsigned count, HSV_t startColor, HSV_t 
 	(start + count - 1)->v = endColor.v;
 }
 
-void led_Fill_Rainbow_RGB(RGB_t *start, unsigned count, RGB_t startColor, RGB_t endColor)
+void led_Fill_Rainbow_RGB(RGB_t *start, uint32_t count, RGB_t startColor, RGB_t endColor)
 {
 	HSV_t hsvStart[count];
 	HSV_t hsvStartColor;
@@ -393,7 +431,7 @@ void led_Fill_Rainbow_RGB(RGB_t *start, unsigned count, RGB_t startColor, RGB_t 
 	(start + count - 1)->b = endColor.b;
 }
 
-void led_Fill_Rainbow_HEX(HEX_t *start, unsigned count, HEX_t startColor, HEX_t endColor)
+void led_Fill_Rainbow_HEX(HEX_t *start, uint32_t count, HEX_t startColor, HEX_t endColor)
 {
 	HSV_t hsvStart[count];
 	HSV_t hsvStartColor;
@@ -407,5 +445,12 @@ void led_Fill_Rainbow_HEX(HEX_t *start, unsigned count, HEX_t startColor, HEX_t 
 	}
 	start[0] = startColor;
 	*(start + count - 1) = endColor;
+}
+
+void led_SFill_RGB(RGB_t *ledRgb, RGB_t rgbColor)
+{
+	ledRgb->r = rgbColor.r;
+	ledRgb->g = rgbColor.g;
+	ledRgb->b = rgbColor.b;
 }
 

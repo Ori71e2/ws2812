@@ -2,11 +2,17 @@
 #include "delay.h"
 #include "ws2812b.h"
 #include "led.h"
-#define NUM_LEDS    60
+#define NUM_LEDS    24
 
 RGB_t ledsRGB[NUM_LEDS];
 HSV_t ledsHSV[NUM_LEDS];
 HEX_t ledsHEX[NUM_LEDS];
+RGB_t ledsRGB2[NUM_LEDS];
+void change(void *leds, void *led)
+{
+	RGB_t *tmp = led;
+	
+}
 int main() {
   led_Init();
   while (1)
@@ -14,7 +20,7 @@ int main() {
 		while (!led_IsReady()) { }; // wait
     //
     // Fill ledsRGB buffer
-		led_Fill_Rainbow_RGB(ledsRGB, NUM_LEDS, RGB(255, 10, 10), RGB(10, 255, 10));
+		// led_Fill_Rainbow_RGB(ledsRGB, NUM_LEDS, RGB(255, 10, 10), RGB(10, 255, 10));
 		// led_Fill_Rainbow_HSV(ledsHSV, NUM_LEDS, HSV(0, 255, 255), HSV(240, 255, 255));
 		// led_Fill_Rainbow_HEX(ledsHEX, NUM_LEDS, HEX(0xff0000), HEX(0x0000ff));
 
@@ -22,11 +28,11 @@ int main() {
 		// led_Fill_Gradient_HSV(ledsHSV, NUM_LEDS, HSV(0, 255, 255), HSV(240, 255, 255));
 		// led_Fill_Gradient_HEX(ledsHEX, NUM_LEDS, HEX(0xff0000), HEX(0x00ff00));
 
-    // led_Gradual_Show_RGB(ledsRGB, NUM_LEDS, 15, 1, 200);
+    // led_Gradual_Show_RGB(ledsRGB, NUM_LEDS, 0, 1, 200);
     // led_Gradual_Show_HSV(ledsHSV, NUM_LEDS, 15, 1, 200);
     // led_Gradual_Show_HEX(ledsHEX, NUM_LEDS, 15, 1, 200);
 		
-		led_Loop_Show_RGB(ledsRGB, NUM_LEDS, 15, 1, 200, 2);
+		// led_Loop_Show_RGB(ledsRGB, NUM_LEDS, 15, 1, 200, 2);
     // led_Loop_Show_HSV(ledsHSV, NUM_LEDS, 15, 1, 200, 2);
     // led_Loop_Show_HEX(ledsHEX, NUM_LEDS, 15, 1, 200, 2);
 		
@@ -54,5 +60,14 @@ int main() {
 		// led_Clear_HSV(ledsHSV, NUM_LEDS);
 		// led_Clear_HEX(ledsHEX, NUM_LEDS);
 		// delay_ms(500);
+		led_Fill_Solid_RGB(ledsRGB, NUM_LEDS, RGB(255, 0, 0));
+		led_Loop_Show_RGB(ledsRGB, NUM_LEDS, 0, 1, 100, NUM_LEDS * 1);
+		led_Gradual_Show_RGB(ledsRGB, NUM_LEDS, 0, 1, 100);
+		led_Fill_Solid_RGB(ledsRGB2, NUM_LEDS, RGB(0, 255, 0));
+		led_Gradual_Cover_Show_RGB(ledsRGB, ledsRGB2, NUM_LEDS, 0, 1, 100);
+		led_Fill_Solid_RGB(ledsRGB2, NUM_LEDS, RGB(0, 0, 255));
+		led_Gradual_Cover_Show_RGB(ledsRGB, ledsRGB2, NUM_LEDS, 0, 1, 100);
   }
 }
+
+
