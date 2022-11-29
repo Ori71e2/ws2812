@@ -64,10 +64,11 @@ int main() {
 		// led_Gradual_Cover_Show_RGB(ledsRGB, ledsRGB2, NUM_LEDS, 0, 1, 50);
 		// led_Fill_Solid_RGB(ledsRGB2, NUM_LEDS, RGB(0, 0, 255));
 		// led_Gradual_Cover_Show_RGB(ledsRGB, ledsRGB2, NUM_LEDS, 0, 1, 50);
-		led_Fill_Solid_HSV(ledsHSV, NUM_LEDS, HSV(240, 255, 255));
-		led_Show_HSV(ledsHSV, NUM_LEDS);
-		led_Fill_Solid_HSV(ledsHSV2, NUM_LEDS, HSV(120, 155, 200));
-		led_Gradual_Cover_Show_HSV(ledsHSV, ledsHSV2, NUM_LEDS, 0, 1, 50);
+
+		// led_Fill_Solid_HSV(ledsHSV, NUM_LEDS, HSV(240, 255, 255));
+		// led_Show_HSV(ledsHSV, NUM_LEDS);
+		// led_Fill_Solid_HSV(ledsHSV2, NUM_LEDS, HSV(120, 155, 200));
+		// led_Gradual_Cover_Show_HSV(ledsHSV, ledsHSV2, NUM_LEDS, 0, 1, 50);
 		// for (int i = 0 ; i < 50; i++)
 		// {
 		// 	for (int j = 0; j < NUM_LEDS; j++)
@@ -84,11 +85,15 @@ int main() {
 		// 	led_Show_HSV(ledsHSV, NUM_LEDS);
 		// 	delay_ms(60);
 		// }
-		led_Breath_Show_HSV(ledsHSV, NUM_LEDS, 3);
-		led_Fill_Rainbow_HSV(ledsHSV2, NUM_LEDS, HSV(0, 255, 255), HSV(240, 255, 255));
-		led_Gradual_Cover_Show_HSV(ledsHSV, ledsHSV2, NUM_LEDS, 0, 1, 50);
-		delay_ms(1000);
-		led_Circle_Show_HSV(ledsHSV, NUM_LEDS, 50, NUM_LEDS * 5);
+		// led_Breath_Show_HSV(ledsHSV, NUM_LEDS, 3);
+		// led_Fill_Rainbow_HSV(ledsHSV2, NUM_LEDS, HSV(0, 255, 255), HSV(240, 255, 255));
+		// led_Gradual_Cover_Show_HSV(ledsHSV, ledsHSV2, NUM_LEDS, 0, 1, 50);
+		// delay_ms(1000);
+		// led_Circle_Show_HSV(ledsHSV, NUM_LEDS, 50, NUM_LEDS * 5);
+		led_Fill_Solid_RGB(ledsRGB, NUM_LEDS, RGB(255, 0, 0));
+		led_Fill_Solid_RGB(ledsRGB2, NUM_LEDS, RGB(0, 255, 0));
+		led_Tran_Show_RGB(ledsRGB, ledsRGB2, NUM_LEDS, 2000);
+		led_Tran_Show_RGB(ledsRGB2, ledsRGB, NUM_LEDS, 2000);
 		// led_Gradual_Show_HSV(ledsHSV, NUM_LEDS, 0, 1, 50);
   }
 }

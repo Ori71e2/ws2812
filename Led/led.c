@@ -223,31 +223,49 @@ void led_Breath_Show_HSV(HSV_t *start, uint32_t count, uint32_t num)
 		first = 1;
 	}
 }
-
-void led_Circle_Show_RGB(HSV_t *start, uint32_t count, uint32_t delayTime, uint32_t clickTimes)
+void led_Tran_Show_RGB(RGB_t *source, RGB_t *end, uint32_t count, uint32_t tranTime)
 {
-	RGB_t rgbStart[count];
-	RGB_t tmpRgb;
-	led_Clear_RGB(rgbStart, count);
-	for (int i = 0; i < count; i++)
+	int32_t rGap[count], gGap[count], bGap[count];
+	RGB_t ledRgb[count];
+	for (int32_t i = 0; i < count; i++)
 	{
-		HSV2RGB(start + i, rgbStart + i);
+		rGap[i] = (int32_t)((end + i)->r) - (int32_t)((source + i)->r);
+		gGap[i] = (int32_t)((end + i)->g) - (int32_t)((source + i)->g);
+		bGap[i] = (int32_t)((end + i)->b) - (int32_t)((source + i)->b);
 	}
+	int32_t init = 125;
+	int32_t timeGap = tranTime / init;
+	int32_t clickNum = init;
+	for ( ; clickNum >= 0; clickNum--)
+	{
+		for (int32_t i = 0; i < count; i++)
+		{
+			ledRgb[i].r = (uint8_t)((int32_t)((source + i)->r) + rGap[i] / init * ( init - clickNum));
+			ledRgb[i].g = (uint8_t)((int32_t)((source + i)->g) + gGap[i] / init * ( init - clickNum));
+			ledRgb[i].b = (uint8_t)((int32_t)((source + i)->b) + bGap[i] / init * ( init - clickNum));
+		}
+		led_Show_RGB(ledRgb, count);
+		delay_ms(timeGap);
+	}
+}
+void led_Circle_Show_RGB(RGB_t *start, uint32_t count, uint32_t delayTime, uint32_t clickTimes)
+{
+	RGB_t tmpRgb;
 	while (clickTimes--)
 	{
-		tmpRgb.r = (rgbStart + count - 1)->r;
-		tmpRgb.g = (rgbStart + count - 1)->g;
-		tmpRgb.b = (rgbStart + count - 1)->b;
-		for (int i = 0; i < count - 1; i++)
+		tmpRgb.r = (start + count - 1)->r;
+		tmpRgb.g = (start + count - 1)->g;
+		tmpRgb.b = (start + count - 1)->b;
+		for (int i = count - 1; i > 0; i--)
 		{
-			(rgbStart + i + 1)->r = (rgbStart + i)->r;
-			(rgbStart + i + 1)->g = (rgbStart + i)->g;
-			(rgbStart + i + 1)->b = (rgbStart + i)->b;
+			(start + i)->r = (start + i - 1)->r;
+			(start + i)->g = (start + i - 1)->g;
+			(start + i)->b = (start + i - 1)->b;
 		}
-		rgbStart->r = tmpRgb.r;
-		rgbStart->g = tmpRgb.g;
-		rgbStart->b = tmpRgb.b;
-		led_Show_RGB(rgbStart, count);
+		start->r = tmpRgb.r;
+		start->g = tmpRgb.g;
+		start->b = tmpRgb.b;
+		led_Show_RGB(start, count);
 		delay_ms(delayTime);
 	}
 }
@@ -277,9 +295,12 @@ void led_Circle_Show_HSV(HSV_t *start, uint32_t count, uint32_t delayTime, uint3
 		rgbStart->b = tmpRgb.b;
 		led_Show_RGB(rgbStart, count);
 		delay_ms(delayTime);
+		for (int i = 0; i < count; i++)
+		{
+			RGB2HSV(rgbStart + i, start + i);
+		}
 	}
 }
-
 
 void led_Gradual_Cover_Show_HSV(HSV_t *source, HSV_t *end, uint32_t count, uint32_t offset, uint32_t length, uint32_t delayTime)
 {

@@ -29,7 +29,10 @@ void led_Gradual_Cover_Show_HSV(HSV_t *source, HSV_t *end, uint32_t count, uint3
 
 void led_PLoop_Show_RGB(RGB_t *start, uint32_t count, uint32_t offset, uint32_t length, Delaytime_t *delaytimeF, uint32_t clickTimes, uint32_t time);
 
+void led_Circle_Show_RGB(RGB_t *start, uint32_t count, uint32_t delayTime, uint32_t clickTimes);
 void led_Circle_Show_HSV(HSV_t *start, uint32_t count, uint32_t delayTime, uint32_t clickTimes);
+
+void led_Tran_Show_RGB(RGB_t *source, RGB_t *end, uint32_t count, uint32_t tranTime);
 
 void led_Shut_RGB(uint32_t count);
 void led_Shut_HSV(uint32_t count);
