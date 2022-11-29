@@ -46,4 +46,7 @@ void HEX2HSV(HEX_t hex, HSV_t *hsv);
 void RGB2HEX(RGB_t *rgb, HEX_t *hex);
 void RGB2HSV(RGB_t *rgb, HSV_t *hsv);
 void HSV2HEX(HSV_t *hsv, HEX_t *hex);
+
+void ARR_HSV2RGB(HSV_t *ledsHsv, RGB_t *ledsRgb ,int count);
+void ARR_HEX2RGB(HEX_t *ledsHex, RGB_t *ledsRgb ,int count);
 #endif //__BITMAP_H

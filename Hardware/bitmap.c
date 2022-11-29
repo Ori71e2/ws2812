@@ -146,3 +146,18 @@ void RGB2HSV(RGB_t *rgb, HSV_t *hsv)
     return;
 }
 
+void ARR_HSV2RGB(HSV_t *ledsHsv, RGB_t *ledsRgb ,int count)
+{
+	for ( int i = 0; i < count; i++)
+	{
+		HSV2RGB(ledsHsv + i, ledsRgb + i);
+ 	}
+}
+
+void ARR_HEX2RGB(HEX_t *ledsHex, RGB_t *ledsRgb ,int count)
+{
+	for ( int i = 0; i < count; i++)
+	{
+		HEX2RGB(*(ledsHex + i), ledsRgb + i);
+ 	}
+}
