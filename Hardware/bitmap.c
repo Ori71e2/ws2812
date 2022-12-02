@@ -146,7 +146,7 @@ void RGB2HSV(RGB_t *rgb, HSV_t *hsv)
     return;
 }
 
-void ARR_HSV2RGB(HSV_t *ledsHsv, RGB_t *ledsRgb ,int count)
+void ARR_HSV2RGB(HSV_t *ledsHsv, RGB_t *ledsRgb ,uint32_t count)
 {
 	for (int i = 0; i < count; i++)
 	{
@@ -154,7 +154,7 @@ void ARR_HSV2RGB(HSV_t *ledsHsv, RGB_t *ledsRgb ,int count)
  	}
 }
 
-void ARR_HEX2RGB(HEX_t *ledsHex, RGB_t *ledsRgb ,int count)
+void ARR_HEX2RGB(HEX_t *ledsHex, RGB_t *ledsRgb ,uint32_t count)
 {
 	for (int i = 0; i < count; i++)
 	{
@@ -162,7 +162,7 @@ void ARR_HEX2RGB(HEX_t *ledsHex, RGB_t *ledsRgb ,int count)
  	}
 }
 
-void ARR_RGB2HSV(RGB_t *ledsRgb, HSV_t *ledsHsv ,int count)
+void ARR_RGB2HSV(RGB_t *ledsRgb, HSV_t *ledsHsv ,uint32_t count)
 {
 	for (int i = 0; i < count; i++)
 	{
@@ -170,7 +170,7 @@ void ARR_RGB2HSV(RGB_t *ledsRgb, HSV_t *ledsHsv ,int count)
  	}
 }
 
-void ARR_HEX2HSV(HEX_t *ledsHex, HSV_t *ledsHsv ,int count)
+void ARR_HEX2HSV(HEX_t *ledsHex, HSV_t *ledsHsv ,uint32_t count)
 {
 	for (int i = 0; i < count; i++)
 	{

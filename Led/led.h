@@ -34,7 +34,7 @@ void led_Circle_Show_HSV(HSV_t *start, uint32_t count, uint32_t delayTime, uint3
 
 void led_Tran_Show_RGB(RGB_t *source, RGB_t *end, uint32_t count, uint32_t tranTime);
 void led_Tran_Show_HSV2RGB(HSV_t *source, RGB_t *end, uint32_t count, uint32_t tranTime);
-void led_Tran_Show_HSV(HSV_t *source, HSV_t *end, uint32_t count, uint32_t tranTime);
+void led_Tran_Show_HSV(HSV_t *sourceHsv, HSV_t *endHsv, uint32_t count, uint32_t tranTime);
 
 void led_Shut_RGB(uint32_t count);
 void led_Shut_HSV(uint32_t count);
