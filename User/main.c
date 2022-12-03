@@ -57,7 +57,7 @@ int main() {
 		// led_Clear_HSV(ledsHSV, NUM_LEDS);
 		// led_Clear_HEX(ledsHEX, NUM_LEDS);
 		// delay_ms(500);
-
+		delay_ms(2000);
 		led_Fill_Solid_RGB(ledsRGB, NUM_LEDS, RGB(255, 0, 0));
 		led_PLoop_Show_RGB(ledsRGB, NUM_LEDS, 0, 1, delaytimeAverage, NUM_LEDS * 2, 50);
 		led_Gradual_Show_RGB(ledsRGB, NUM_LEDS, 0, 1, 50);
