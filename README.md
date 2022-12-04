@@ -10,7 +10,7 @@ ws2812灯串连接时，其电源正极要单独供电，负极要和stm32板子
 
 # 正在进行
 引入DSP库。
-注意：要配置宏ARM_MATH_CM3（点击魔法棒那个图标，在C/C++里加入；本项目共USE_STDPERIPH_DRIVER,ARM_MATH_CM3）
+注意：要配置宏ARM_MATH_CM3（点击魔法棒那个图标，在C/C++里加入；本项目共USE_STDPERIPH_DRIVER,ARM_MATH_CM3, ARM_MATH_MATRIX_CHECK, ARM_MATH_ROUNDING）
 
 
 # 版本
