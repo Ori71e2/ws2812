@@ -3,6 +3,7 @@
 #include "ws2812b.h"
 #include "led.h"
 #include "time.h"
+#include "test.h"
 #define NUM_LEDS    24
 
 RGB_t ledsRGB[NUM_LEDS];
@@ -15,7 +16,8 @@ int main() {
   while (1)
 	{
 		while (!led_IsReady()) { }; // wait
-    //
+		arm_sin_cos_example_f32();
+		//
     // Fill ledsRGB buffer
 		// led_Fill_Rainbow_RGB(ledsRGB, NUM_LEDS, RGB(255, 10, 10), RGB(10, 255, 10));
 		// led_Fill_Rainbow_HSV(ledsHSV, NUM_LEDS, HSV(0, 255, 255), HSV(240, 255, 255));

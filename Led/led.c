@@ -279,7 +279,6 @@ void led_Circle_Show_RGB(RGB_t *start, uint32_t count, uint32_t delayTime, uint3
 void led_Circle_Show_HSV(HSV_t *start, uint32_t count, uint32_t delayTime, uint32_t clickTimes)
 {
 	RGB_t rgbStart[count];
-	RGB_t tmpRgb;
 	led_Clear_RGB(rgbStart, count);
 	ARR_HSV2RGB(start, rgbStart, count);
 	led_Circle_Show_RGB(rgbStart, count, delayTime, clickTimes);
