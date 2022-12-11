@@ -249,6 +249,9 @@ void WS2812B_DMA_HANDLER(void)
 
 //------------------------------------------------------------
 // Interface
+// DMA产生PWM波，这个是stm32的一个功能
+// 数据由DMABuffe，通过DMA方式，发送到WS2812B_TIM_DMA_CCR
+// 
 //------------------------------------------------------------
 
 void ws2812b_Init(void)
@@ -315,7 +318,7 @@ void ws2812b_Init(void)
 
   //DMA_StructInit(&DMA_InitStruct);
   // WS2812B_TIM_DMA_CCR     (WS2812B_TIM->CCR1) (TIM4->CCR1)  TIM4((TIM_TypeDef *)
-  DMA_InitStruct.DMA_PeripheralBaseAddr = (uint32_t) & WS2812B_TIM_DMA_CCR;  // 自定义
+  DMA_InitStruct.DMA_PeripheralBaseAddr = (uint32_t) & WS2812B_TIM_DMA_CCR;  // 自定义，外设基址
   DMA_InitStruct.DMA_MemoryBaseAddr = (uint32_t) DMABuffer;
   DMA_InitStruct.DMA_DIR = DMA_DIR_PeripheralDST;
   DMA_InitStruct.DMA_BufferSize = sizeof(DMABuffer) / sizeof(uint16_t);
