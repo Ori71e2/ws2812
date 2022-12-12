@@ -17,7 +17,7 @@ ws2812灯串连接时，其电源正极要单独供电，负极要和stm32板子
 
 2）ADC + DMA + FFT实现频谱
 FFT频谱
-keil空间不足，.\Objects\template.axf: Error: L6406E: No space in execution regions with .ANY selector mat ———— 修改TROOM1, IRAM1
+注： 存在的错误，keil空间不足，.\Objects\template.axf: Error: L6406E: No space in execution regions with .ANY selector mat ———— 修改编译优化等级为level 2(-O2)级别
 
 # 各版本源码
 1）第一版

@@ -172,7 +172,23 @@ static void SrcFilterHEX(void **src, PWM_t **pwm, unsigned *count, unsigned size
   *src = hex;
   *pwm = p;
 }
-
+// 只要开始发送，DMA是处于一直运转状态，直至所有数据发送完毕，发送一次完整的数据后，DMA停止发送数据，此时GPIO端口到下一次发送前置数据后、正式数据前，会一直处于低电平状态
+// 此时ws2812一直会锁住之前的数据，直至接收新数据。  这点可以通过将数据发送端口连接线断开观察到。
+// 1、DMAcount小于buffer size，剩余buffer区域数据填充0，pwm在这个周期内将这块数据全部发送给ws2812，buffer size超出部分被ws2812舍弃掉。
+// 仅一次周期完成全部传输。
+// 同时DMAcount将会被置零。
+// 在下一次中断，DMAsendnext中开启下一个周期
+// 2、DMAcount等于buffersize
+// 3、DMAcount大于buffersize
+// 不管上述哪种情况，都是通过缓冲区中转区一次性将全部数据发送完毕。
+// 使用RESET编码(WS2812帧锁定编码)，也就是超过50us的低电平形成WS2812输出锁定。
+// 根据WS2812控制信号协议，RESET是时长超过50us的低电平，因此，在2.5MHz的波特率下，连续输出125bit的高电平，
+// 也就是16个byte的0xff，则可以产生：16 × 8 = 128 16 \times 8 = 12816×8=128个1输出，便可以产生128 × 0.4 = 51.2 μ s 128 \times 0.4 = 51.2\mu s128×0.4=51.2μs的低电平。
+// 开始发送了BUFFSTARTSIZE既2*24*（0.85+0.4)=60us时间的低电平，相当于重置开始。
+// 然后开始正式发送。
+// 发送完毕所有数据后，停止发送，所有数据被ws2812锁定。
+// 当发送的数据多于灯数量时，多余的被丢弃，相当于尾端没有接收。
+// 注:  多余的数据在最后被置全部为零
 static void DMASend(SrcFilter_t *filter, void *src, unsigned count)
 {
   if (!DMABusy)

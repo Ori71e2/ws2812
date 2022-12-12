@@ -6,7 +6,7 @@ static uint16_t ADC_SourceData[SAMPLS_NUM] = {0};
 #else
 static uint16_t ADC_SourceData[SAMPLS_NUM][ADC_CHANNEL_NUMS] = {0};
 #endif
-
+static volatile int ADCFinish;
 /***********************************************************************************************************************************************
 *adc初始化配置
 *1.目     的：用ADC采样值进行fft运算，求取采样后波形相关属性（本例主要分析50Hz正选波，及高/低次谐波）
@@ -91,7 +91,7 @@ void mike_Init(void)
 
 	DMA_ITConfig(MIKE_DMA_CHANNEL, MIKE_DMA_IT_TC, ENABLE);
 
-	DMA_ClearITPendingBit(DMA1_IT_TC1);
+	DMA_ClearITPendingBit(MIKE_DMA_IT_TC);
 
 	ADC_InitTypeDef  ADC_InitStructure;
 
@@ -99,7 +99,7 @@ void mike_Init(void)
 	
 	RCC_ADCCLKConfig(RCC_PCLK2_Div6);
 
-	ADC_DeInit(ADC1);
+	ADC_DeInit(MIKE_ADC);
 	ADC_InitStructure.ADC_Mode               = ADC_Mode_Independent;
 	#if SINGLECHANNEL
 	ADC_InitStructure.ADC_ScanConvMode       = DISABLE;								//如果是多通道，打开扫描模式
@@ -111,26 +111,26 @@ void mike_Init(void)
 	ADC_InitStructure.ADC_ContinuousConvMode = DISABLE;
 	ADC_InitStructure.ADC_ExternalTrigConv   = ADC_ExternalTrigConv_T3_TRGO;					//选择TIM3外部触发
 	ADC_InitStructure.ADC_DataAlign          = ADC_DataAlign_Right;
-	ADC_Init(ADC1, &ADC_InitStructure);
+	ADC_Init(MIKE_ADC, &ADC_InitStructure);
 
 	//==========================================================================   
-	ADC_RegularChannelConfig(MIKE_ADC, MIKE_CHANNEL,  1, ADC_SampleTime_239Cycles5);	//AI_VS_A1
+	ADC_RegularChannelConfig(MIKE_ADC, MIKE_CHANNEL,  MIKE_CHANNEL_RANK, ADC_SampleTime_239Cycles5);	//AI_VS_A1
 	#if (!SINGLECHANNEL)
 	ADC_RegularChannelConfig(MIKE_ADC, ADC_Channel_4,  2, ADC_SampleTime_239Cycles5);	//AI_VS_B1
 	ADC_RegularChannelConfig(MIKE_ADC, ADC_Channel_5,  3, ADC_SampleTime_239Cycles5);	//AI_VS_C1
 	#endif
 
-	ADC_DMACmd(ADC1, ENABLE);
+	ADC_DMACmd(MIKE_ADC, ENABLE);
 	
-	ADC_Cmd(ADC1, ENABLE);
+	ADC_Cmd(MIKE_ADC, ENABLE);
 	
-	ADC_ResetCalibration(ADC1);
-	while(ADC_GetResetCalibrationStatus(ADC1));
-	ADC_StartCalibration(ADC1);
-	while(ADC_GetCalibrationStatus(ADC1));
+	ADC_ResetCalibration(MIKE_ADC);
+	while(ADC_GetResetCalibrationStatus(MIKE_ADC));
+	ADC_StartCalibration(MIKE_ADC);
+	while(ADC_GetCalibrationStatus(MIKE_ADC));
 
-	ADC_ExternalTrigConvCmd(ADC1, ENABLE);
-	//ADC_SoftwareStartConvCmd(ADC1, ENABLE);
+	ADC_ExternalTrigConvCmd(MIKE_ADC, ENABLE);
+	//ADC_SoftwareStartConvCmd(MIKE_ADC, ENABLE);
 }
 
 //ADC_DMA中断服务程序
@@ -138,9 +138,13 @@ void WS2812B_DMA_HANDLER(void)
 {
 	if(DMA_GetITStatus(MIKE_DMA_IT_TC) != RESET)
 	{
-		uint8_t adc_finish_fg = 1;
+		ADCFinish = 1;
 		DMA_ClearITPendingBit(MIKE_DMA_IT_TC);
 	}
 }
 
 
+inline int mike_IsReady(void)
+{
+  return ADCFinish;
+}
