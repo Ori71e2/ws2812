@@ -188,7 +188,10 @@ static void SrcFilterHEX(void **src, PWM_t **pwm, unsigned *count, unsigned size
 // 然后开始正式发送。
 // 发送完毕所有数据后，停止发送，所有数据被ws2812锁定。
 // 当发送的数据多于灯数量时，多余的被丢弃，相当于尾端没有接收。
-// 注:  多余的数据在最后被置全部为零
+// 注:  缓冲区多余的数据在最后被置全部为零
+// ws2812要求连续发送，当进去中断函数时，这个函数执行时间不能超过50us
+// stm32f103指令周期1.25MIPS/Mhz，72M是72*1.25。每个指令执行周期为1M（us）/72*1.25M=0.011us
+// 不会导致ws2812锁定当前帧数据
 static void DMASend(SrcFilter_t *filter, void *src, unsigned count)
 {
   if (!DMABusy)
@@ -202,13 +205,14 @@ static void DMASend(SrcFilter_t *filter, void *src, unsigned count)
     PWM_t *pwm = DMABuffer;
     PWM_t *end = &DMABuffer[WS2812B_BUFFER_SIZE];
 
-    // Start sequence
+    // Start sequence,填充数据0，可产生51.2μs的低电平，开启新的一帧数据
     SrcFilterNull(NULL, &pwm, NULL, WS2812B_START_SIZE);
 
-    // RGB PWM data
+    // RGB PWM data，数据填充剩余缓冲区
     DMAFilter(&DMASrc, &pwm, &DMACount, min(DMACount, end - pwm));
 
-    // Rest of buffer
+    // Rest of buffer，当数据未填充满时（灯珠数量小于缓冲区数量），填充数据0，ws2812也接收，如果数量多，可产生51.2μs的低电平，结束本帧数据
+    // 如果数量不多，ws2812也会接收，根据工作方式，就当无用数据废弃。
     if (pwm < end)
       SrcFilterNull(NULL, &pwm, NULL, end - pwm);
 
@@ -225,6 +229,7 @@ static void DMASendNext(PWM_t *pwm, PWM_t *end)
   if (!DMAFilter)
   {
     // Stop transfer
+    // 最后一次数据发送完毕后，即进入该处，终止整个发送过程，本帧数据全部发送完毕，ws2812锁定整个数据
     TIM_Cmd(WS2812B_TIM, DISABLE);
     DMA_Cmd(WS2812B_DMA_CHANNEL, DISABLE);
 
@@ -232,7 +237,8 @@ static void DMASendNext(PWM_t *pwm, PWM_t *end)
   }
     else if (!DMACount)
   {
-  // Rest of buffer
+    // Rest of buffer
+    // 当最后一次已经发送完毕，填充缓冲区剩余空间数据为0，刷新掉上一次数据，感觉这里的pwm-end已经等于0了
     SrcFilterNull(NULL, &pwm, NULL, end - pwm);
 
     DMAFilter = NULL;
@@ -240,6 +246,8 @@ static void DMASendNext(PWM_t *pwm, PWM_t *end)
   else
   {
     // RGB PWM data
+    // 灯珠数据无法一次发送完毕时，将由中断进入该处继续发送
+    // 中断相关函数指令执行时间未超过50us，ws2812会将本次数据当作上一次发送的后续数据进行处理
     DMAFilter(&DMASrc, &pwm, &DMACount, min(DMACount, end - pwm));
 
     // Rest of buffer
