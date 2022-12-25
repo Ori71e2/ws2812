@@ -251,11 +251,12 @@ static void DMASendNext(PWM_t *pwm, PWM_t *end)
     DMAFilter(&DMASrc, &pwm, &DMACount, min(DMACount, end - pwm));
 
     // Rest of buffer
-  if (pwm < end)
-    SrcFilterNull(NULL, &pwm, NULL, end - pwm);
+    if (pwm < end)
+      SrcFilterNull(NULL, &pwm, NULL, end - pwm);
   }
 }
 
+// 从中断函数出来后DMA再次开始传输
 void WS2812B_DMA_HANDLER(void)
 {
   if (DMA_GetITStatus(WS2812B_DMA_IT_HT) != RESET)
@@ -317,7 +318,7 @@ void ws2812b_Init(void)
   TIM_TimeBaseInitStruct.TIM_CounterMode = TIM_CounterMode_Up;
   // WS2812B_PERIOD          30
   TIM_TimeBaseInitStruct.TIM_Period = WS2812B_PERIOD - 1;
-  TIM_TimeBaseInitStruct.TIM_ClockDivision = TIM_CKD_DIV1;
+  TIM_TimeBaseInitStruct.TIM_ClockDivision = TIM_CKD_DIV1;  // 时钟分频，不分频
 
   TIM_TimeBaseInit(WS2812B_TIM, &TIM_TimeBaseInitStruct);
 

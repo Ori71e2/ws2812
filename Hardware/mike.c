@@ -6,6 +6,12 @@ static uint16_t ADC_SourceData[SAMPLS_NUM] = {0};
 #else
 static uint16_t ADC_SourceData[SAMPLS_NUM][ADC_CHANNEL_NUMS] = {0};
 #endif
+#if SINGLECHANNEL
+static uint16_t ADC_BUFFER[MIKE_BUFFER_SIZE];
+#else
+static uint16_t ADC_BUFFER[MIKE_BUFFER_SIZE][ADC_CHANNEL_NUMS];
+#endif
+static volatile int ADCBusy;
 static volatile int ADCFinish;
 /***********************************************************************************************************************************************
 *adc初始化配置
@@ -22,19 +28,15 @@ static volatile int ADCFinish;
 void mike_Init(void)
 {
 	// ADC_GPIO_Configuration();
-	
-	//ADC_TIM2_Configuration();
-
+	// ADC_TIM2_Configuration();
 	// ADC_TIM3_Configuration();
-
 	// ADC_DMA_Configuration();
-
 	// ADC_Configuration();
 
 
-	RCC_APB1PeriphClockCmd(MIKE_APB1_RCC, ENABLE);
-	RCC_APB2PeriphClockCmd(MIKE_APB2_RCC, ENABLE);				// 使能GPIOB时钟
-	RCC_AHBPeriphClockCmd(MIKE_AHB_RCC, ENABLE);
+	RCC_APB1PeriphClockCmd(MIKE_APB1_RCC, ENABLE);        // 使能定时器总线
+	RCC_APB2PeriphClockCmd(MIKE_APB2_RCC, ENABLE);				// 使能GPIOB总线
+	RCC_AHBPeriphClockCmd(MIKE_AHB_RCC, ENABLE);          // DMA总线使能， RCC_AHBPeriph_DMA1, AHB=Advanced High Performance Bus，高级高性能总线。
 
 
 	GPIO_InitTypeDef GPIO_InitStructure;
@@ -46,14 +48,15 @@ void mike_Init(void)
 	
 
 	TIM_TimeBaseInitTypeDef TIM_TimeBaseInitStructure; 
-	
-	TIM_TimeBaseInitStructure.TIM_Period = MIKE_PERIOD - 1;							// 设置512Hz采样频率
-	TIM_TimeBaseInitStructure.TIM_Prescaler = (SystemCoreClock / MIKE_FREQUENCY) - 1;
-	TIM_TimeBaseInitStructure.TIM_ClockDivision = TIM_CKD_DIV1;				  // 时钟分频，TIM3是通用定时器，基本定时器不用设置
+	// 1 / 1000000 * 1952  = 0.001952ms，一次计时完整需要的时间
+	// 1 / 0.001952 = 512 Hz
+	TIM_TimeBaseInitStructure.TIM_Period = MIKE_PERIOD - 1;							// 计数器周期，即自动重装载寄存器TIMx_ARR的值，在事件生成时更新到影子寄存器，由TIMx_CR1寄存器的ARPE位配置是否使能缓冲,设置512Hz采样频率
+	TIM_TimeBaseInitStructure.TIM_Prescaler = (SystemCoreClock / MIKE_FREQUENCY) - 1;  // 定时器预分频器设置
+	TIM_TimeBaseInitStructure.TIM_ClockDivision = TIM_CKD_DIV1;				  // 时钟分频，不分频，TIM2-TIM5是通用定时器，基本定时器不用设置
 	TIM_TimeBaseInitStructure.TIM_CounterMode = TIM_CounterMode_Up;			// 向上扫描
 	TIM_TimeBaseInit(MIKE_TIM, &TIM_TimeBaseInitStructure);
 	
-	TIM_SelectOutputTrigger(MIKE_TIM, TIM_TRGOSource_Update);					  // 选择TRGO作为触发源为定时器更新时间
+	TIM_SelectOutputTrigger(MIKE_TIM, TIM_TRGOSource_Update);					  // 选择TRGO作为触发源，为ADC识别，同时出发计时器更新时间
 
 	TIM_Cmd(MIKE_TIM, ENABLE);															            // 开启定时器
 
@@ -61,9 +64,9 @@ void mike_Init(void)
 	DMA_InitTypeDef  DMA_InitStructure;
 
 	DMA_DeInit(MIKE_DMA_CHANNEL);
-	DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t) & MIKE_TIM_DMA_CCR;
+	DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t) & MIKE_DMA_ADC_DR; // ADC_DR数据寄存器保存了ADC转换后的数值，以它作为DMA的传输源地址
 	DMA_InitStructure.DMA_MemoryBaseAddr     = (u32)ADC_SourceData;
-	DMA_InitStructure.DMA_DIR                = DMA_DIR_PeripheralSRC;
+	DMA_InitStructure.DMA_DIR                = DMA_DIR_PeripheralSRC;    // 设置DMA的传输方向，单向传输（DMA_DIR_PeripheralDST，双向传输）
 	#if SINGLECHANNEL
 	DMA_InitStructure.DMA_BufferSize         = sizeof(ADC_SourceData) / sizeof(uint16_t); // SAMPLS_NUM
 	#else
@@ -100,17 +103,17 @@ void mike_Init(void)
 	RCC_ADCCLKConfig(RCC_PCLK2_Div6);
 
 	ADC_DeInit(MIKE_ADC);
-	ADC_InitStructure.ADC_Mode               = ADC_Mode_Independent;
+	ADC_InitStructure.ADC_Mode               = ADC_Mode_Independent;  // 独立模式
 	#if SINGLECHANNEL
-	ADC_InitStructure.ADC_ScanConvMode       = DISABLE;								//如果是多通道，打开扫描模式
-	ADC_InitStructure.ADC_NbrOfChannel       = 1;
+	ADC_InitStructure.ADC_ScanConvMode       = DISABLE;								// 如果是单通道，关闭扫描模式
+	ADC_InitStructure.ADC_NbrOfChannel       = 1;                     // 单通道，通道数量为1
 	#else
-	ADC_InitStructure.ADC_ScanConvMode       = ENABLE;								//如果是单通道，关闭扫描模式
-	ADC_InitStructure.ADC_NbrOfChannel       = ADC_CHANNEL_NUMS;
+	ADC_InitStructure.ADC_ScanConvMode       = ENABLE;								// 如果是多通道，打开扫描模式
+	ADC_InitStructure.ADC_NbrOfChannel       = ADC_CHANNEL_NUMS;      // 多通道
 	#endif
-	ADC_InitStructure.ADC_ContinuousConvMode = DISABLE;
-	ADC_InitStructure.ADC_ExternalTrigConv   = ADC_ExternalTrigConv_T3_TRGO;					//选择TIM3外部触发
-	ADC_InitStructure.ADC_DataAlign          = ADC_DataAlign_Right;
+	ADC_InitStructure.ADC_ContinuousConvMode = DISABLE;               // 非连续转换
+	ADC_InitStructure.ADC_ExternalTrigConv   = MIKE_ADC_EXTRIG;				// 选择TIM3外部触发
+	ADC_InitStructure.ADC_DataAlign          = ADC_DataAlign_Right;   // 转化结果右对齐
 	ADC_Init(MIKE_ADC, &ADC_InitStructure);
 
 	//==========================================================================   
@@ -134,7 +137,7 @@ void mike_Init(void)
 }
 
 //ADC_DMA中断服务程序
-void WS2812B_DMA_HANDLER(void)
+void MIKE_DMA_HANDLER(void)
 {
 	if(DMA_GetITStatus(MIKE_DMA_IT_TC) != RESET)
 	{

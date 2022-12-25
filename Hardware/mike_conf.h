@@ -9,10 +9,15 @@
 #include <stm32f10x_dma.h>
 #include <misc.h>
 
+#define SINGLECHANNEL 1
+
+#define ADC_CHANNEL_NUMS 	3
+#define SAMPLS_NUM        1024
+
 #define MIKE_BUFFER_SIZE     60
 #define MIKE_START_SIZE      2
 
-#define MIKE_APB1_RCC        RCC_APB1Periph_TIM5
+#define MIKE_APB1_RCC        RCC_APB1Periph_TIM3
 #define MIKE_APB2_RCC        RCC_APB2Periph_GPIOB
 
 #define MIKE_AHB_RCC         RCC_AHBPeriph_DMA1
@@ -25,7 +30,6 @@
 #define MIKE_TIM_OCINIT      TIM_OC1Init
 #define MIKE_TIM_OCPRELOAD   TIM_OC1PreloadConfig
 #define MIKE_TIM_DMA_CC      TIM_DMA_CC1
-#define MIKE_TIM_DMA_CCR     (MIKE_TIM->CCR1)
 
 #define MIKE_DMA             DMA1
 #define MIKE_DMA_CHANNEL     DMA1_Channel2
@@ -45,6 +49,8 @@
 #define MIKE_PULSE_LOW       9
 
 #define MIKE_ADC             ADC1
+#define MIKE_ADC_EXTRIG      ADC_ExternalTrigConv_T3_TRGO
 #define MIKE_CHANNEL         ADC_Channel_1
 #define MIKE_CHANNEL_RANK    1
+#define MIKE_DMA_ADC_DR      (MIKE_ADC->DR)
 #endif //__MIKE_CONF_H
