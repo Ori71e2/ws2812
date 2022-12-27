@@ -1,11 +1,12 @@
 #include "mike.h"
 #include "mike_conf.h"
-
+// extern 碰到 static 时会失效的，这里定义不要在前面加上static，因为会被其它文件引用
 #if SINGLECHANNEL
-static uint16_t ADC_SourceData[SAMPLS_NUM] = {0};
+uint16_t ADC_SourceData[SAMPLS_NUM] = {0};
 #else
-static uint16_t ADC_SourceData[SAMPLS_NUM][ADC_CHANNEL_NUMS] = {0};
+uint16_t ADC_SourceData[SAMPLS_NUM][ADC_CHANNEL_NUMS] = {0};
 #endif
+
 // #if SINGLECHANNEL
 // static uint16_t ADC_BUFFER[MIKE_BUFFER_SIZE];
 // #else

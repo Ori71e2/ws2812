@@ -4,20 +4,14 @@
 #include "table_fft.h"
 #include "math.h"
 
-u32 FFT_SourceData[SAMPLS_NUM] = {0};	//fftÊäÈëÐòÁÐ
-u32 FFT_OutData[SAMPLS_NUM] = {0};		//fftÊä³öÐòÁÐ
-u32 FFT_Mag[SAMPLS_NUM/2] = {0};		//·ùÆµÌØÐÔÐòÁÐ£¨ÐòºÅ´ú±íÆµÂÊ·ÖÁ¿£¬Öµ´ú±í·ùÖµ´óÐ¡¡£ÓÉÓÚFFTµÄÆµÆ×½á¹ûÊÇ¹ØÓÚÄÎ¿üË¹ÌØÆµÂÊ¶Ô³ÆµÄ£¬ËùÒÔÖ»¼ÆËãÒ»°ëµÄµã¼´¿É£©
+uint32_t FFT_SourceData[SAMPLS_NUM] = {0};	//
+uint32_t FFT_OutData[SAMPLS_NUM] = {0};		//
+uint32_t FFT_Mag[SAMPLS_NUM/2] = {0};		  // 
 
 
 #if 0
-/****************************************************************************************************
-º¯ÊýÃû³Æ:InitBufInArray()
-º¯Êý¹¦ÄÜ:Ä£Äâ²ÉÑùÊý¾Ý£¬²ÉÑùÊý¾ÝÖÐ°üº¬3ÖÖÆµÂÊÕýÏÒ²¨(350Hz£¬8400Hz£¬18725Hz)
-²ÎÊýËµÃ÷:
-±¸     ×¢:ÔÚlBufInArrayÊý×éÖÐ£¬Ã¿¸öÊý¾ÝµÄ¸ß16Î»´æ´¢²ÉÑùÊý¾ÝµÄÊµ²¿£¬µÍ16Î»´æ´¢²ÉÑùÊý¾ÝµÄÐé²¿(×ÜÊÇÎª0)
-****************************************************************************************************/
 
-u16 lBufInArray[SAMPLS_NUM];
+uint16_t lBufInArray[SAMPLS_NUM];
 
 void InitBufInArray(void)
 {
@@ -31,13 +25,6 @@ void InitBufInArray(void)
 }
 #endif
 
-/********************************************************************************************************
-º¯ÊýÃû³Æ:GetPowerMag()
-º¯Êý¹¦ÄÜ:¼ÆËã¸÷´ÎÐ³²¨·ùÖµ
-²ÎÊýËµÃ÷:
-±¸¡¡¡¡×¢:ÏÈ½«ADC_FFT_OutData·Ö½â³ÉÊµ²¿(X)ºÍÐé²¿(Y)£¬È»ºó¼ÆËã·ùÆµÌØÐÔÐòÁÐFFT_Mag
-         ±¾º¯Êý²Î¿¼ÍøÒ³£ºhttps://wenku.baidu.com/view/08ccee0984868762cbaed532.html£¬¹ØÓÚ·ùÆµÌØÐÔ¼ÆËã²¿·Ö
-**********************************************************************************************************/
 void GetPowerMag(void)
 {
 	signed short lX,lY;
@@ -72,21 +59,17 @@ void GetPowerMag(void)
 	#endif
 }
 
-/************************************************
-*ÓÉÓÚÔÚfftÔËËã¹ý³ÌÖÐ²»ÔÊÐíÔ´Êý¾Ý¸üÐÂ
-*½«Ô´Êý¾Ý¿½±´µ½ÁíÒ»¿éÄÚ´æ
-*´Ë²½Öè¿ÉÒÔ±»Ìæ»»Îª£º½øÐÐfftÔËËãÊ±£¬¹Ø±Õadc×ª»»
-*************************************************/
 void Get_FFT_Source_Data(EN_FFT_CHANNEL channel_idx)
 {
-	u16 i,j;
+	uint16_t i;
+  // uint16_t j;
 
 	for(i=0; i<SAMPLS_NUM; i++)
 	{
 		#if SINGLECHANNEL
-		FFT_SourceData[i] = (u32)ADC_SourceData[i];
+		FFT_SourceData[i] = (uint32_t)(ADC_SourceData[i]);
 		#else
-		FFT_SourceData[i] = (u32)ADC_SourceData[i][channel_idx];
+		FFT_SourceData[i] = (uint32_t)(ADC_SourceData[i][channel_idx]);
 		#endif
 	}
 }
@@ -101,7 +84,7 @@ void FFT_test(void)
 
 void Test_Time_Func(void)			//test time
 {
-	static bool fg = 1;
+	static int fg = 1;
 
 	fg = !fg;
 	
