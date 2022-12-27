@@ -6,13 +6,12 @@ static uint16_t ADC_SourceData[SAMPLS_NUM] = {0};
 #else
 static uint16_t ADC_SourceData[SAMPLS_NUM][ADC_CHANNEL_NUMS] = {0};
 #endif
-#if SINGLECHANNEL
-static uint16_t ADC_BUFFER[MIKE_BUFFER_SIZE];
-#else
-static uint16_t ADC_BUFFER[MIKE_BUFFER_SIZE][ADC_CHANNEL_NUMS];
-#endif
-static volatile int ADCBusy;
-static volatile int ADCFinish;
+// #if SINGLECHANNEL
+// static uint16_t ADC_BUFFER[MIKE_BUFFER_SIZE];
+// #else
+// static uint16_t ADC_BUFFER[MIKE_BUFFER_SIZE][ADC_CHANNEL_NUMS];
+// #endif
+static volatile int ADCFinish = 1;
 /***********************************************************************************************************************************************
 *adc初始化配置
 *1.目     的：用ADC采样值进行fft运算，求取采样后波形相关属性（本例主要分析50Hz正选波，及高/低次谐波）
@@ -56,7 +55,7 @@ void mike_Init(void)
 	TIM_TimeBaseInitStructure.TIM_CounterMode = TIM_CounterMode_Up;			// 向上扫描
 	TIM_TimeBaseInit(MIKE_TIM, &TIM_TimeBaseInitStructure);
 	
-	TIM_SelectOutputTrigger(MIKE_TIM, TIM_TRGOSource_Update);					  // 选择TRGO作为触发源，为ADC识别，同时出发计时器更新时间
+	TIM_SelectOutputTrigger(MIKE_TIM, TIM_TRGOSource_Update);					  // 选择TRGO作为触发源，为ADC识别，同时触发计时器更新时间
 
 	TIM_Cmd(MIKE_TIM, ENABLE);															            // 开启定时器
 
@@ -64,9 +63,9 @@ void mike_Init(void)
 	DMA_InitTypeDef  DMA_InitStructure;
 
 	DMA_DeInit(MIKE_DMA_CHANNEL);
-	DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t) & MIKE_DMA_ADC_DR; // ADC_DR数据寄存器保存了ADC转换后的数值，以它作为DMA的传输源地址
+	DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t) & MIKE_DMA_ADC_DR;              // ADC_DR数据寄存器保存了ADC转换后的数值，以它作为DMA的传输源地址
 	DMA_InitStructure.DMA_MemoryBaseAddr     = (u32)ADC_SourceData;
-	DMA_InitStructure.DMA_DIR                = DMA_DIR_PeripheralSRC;    // 设置DMA的传输方向，单向传输（DMA_DIR_PeripheralDST，双向传输）
+	DMA_InitStructure.DMA_DIR                = DMA_DIR_PeripheralSRC;                     // 设置DMA的传输方向，单向传输（DMA_DIR_PeripheralDST，双向传输）
 	#if SINGLECHANNEL
 	DMA_InitStructure.DMA_BufferSize         = sizeof(ADC_SourceData) / sizeof(uint16_t); // SAMPLS_NUM
 	#else
@@ -83,7 +82,7 @@ void mike_Init(void)
 
 	DMA_Cmd(MIKE_DMA_CHANNEL, ENABLE);//使能DMA	
 
-	// ADC_DMA_NVIC_Configuration
+	// ADC_DMA_NVIC_Configuration嵌套向量中断控制器（NVIC）
 	NVIC_InitTypeDef NVIC_InitStructure;
 
 	NVIC_InitStructure.NVIC_IRQChannel = MIKE_DMA_IRQ;
@@ -100,7 +99,7 @@ void mike_Init(void)
 
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_ADC1, ENABLE);
 	
-	RCC_ADCCLKConfig(RCC_PCLK2_Div6);
+	RCC_ADCCLKConfig(RCC_PCLK2_Div6);                                 // 配置ADC时钟为6分频，即12MHz
 
 	ADC_DeInit(MIKE_ADC);
 	ADC_InitStructure.ADC_Mode               = ADC_Mode_Independent;  // 独立模式
@@ -117,7 +116,7 @@ void mike_Init(void)
 	ADC_Init(MIKE_ADC, &ADC_InitStructure);
 
 	//==========================================================================   
-	ADC_RegularChannelConfig(MIKE_ADC, MIKE_CHANNEL,  MIKE_CHANNEL_RANK, ADC_SampleTime_239Cycles5);	//AI_VS_A1
+	ADC_RegularChannelConfig(MIKE_ADC, MIKE_CHANNEL,  MIKE_CHANNEL_RANK, ADC_SampleTime_239Cycles5);	//AI_VS_A1 转换通道、转换顺序、采样时间（这里是239.5个周期）
 	#if (!SINGLECHANNEL)
 	ADC_RegularChannelConfig(MIKE_ADC, ADC_Channel_4,  2, ADC_SampleTime_239Cycles5);	//AI_VS_B1
 	ADC_RegularChannelConfig(MIKE_ADC, ADC_Channel_5,  3, ADC_SampleTime_239Cycles5);	//AI_VS_C1
@@ -146,8 +145,11 @@ void MIKE_DMA_HANDLER(void)
 	}
 }
 
-
-inline int mike_IsReady(void)
+inline int mike_IsCollected(void)
 {
   return ADCFinish;
+}
+inline void mike_StartCollected(void)
+{
+	ADCFinish = 0;
 }

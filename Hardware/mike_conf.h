@@ -14,8 +14,8 @@
 #define ADC_CHANNEL_NUMS 	3
 #define SAMPLS_NUM        1024
 
-#define MIKE_BUFFER_SIZE     60
-#define MIKE_START_SIZE      2
+// #define MIKE_BUFFER_SIZE     60
+// #define MIKE_START_SIZE      2
 
 #define MIKE_APB1_RCC        RCC_APB1Periph_TIM3
 #define MIKE_APB2_RCC        RCC_APB2Periph_GPIOB

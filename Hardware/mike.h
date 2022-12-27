@@ -17,5 +17,6 @@ extern uint16_t ADC_SourceData[SAMPLS_NUM][ADC_CHANNEL_NUMS];
 #endif
 
 void mike_Init(void);
-
+int mike_IsCollected(void);
+void mike_StartCollected(void);
 #endif

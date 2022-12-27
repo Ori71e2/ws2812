@@ -1,13 +1,8 @@
-#include "app_fft.h"
-#include "drv_adc.h"
+#include "fft.h"
+#include "mike.h"
 #include "stm32_dsp.h"
 #include "table_fft.h"
 #include "math.h"
-
-
-
-
-
 
 u32 FFT_SourceData[SAMPLS_NUM] = {0};	//fftÊäÈëÐòÁÐ
 u32 FFT_OutData[SAMPLS_NUM] = {0};		//fftÊä³öÐòÁÐ

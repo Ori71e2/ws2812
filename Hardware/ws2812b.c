@@ -183,15 +183,25 @@ static void SrcFilterHEX(void **src, PWM_t **pwm, unsigned *count, unsigned size
 // 不管上述哪种情况，都是通过缓冲区中转区一次性将全部数据发送完毕。
 // 使用RESET编码(WS2812帧锁定编码)，也就是超过50us的低电平形成WS2812输出锁定。
 // 根据WS2812控制信号协议，RESET是时长超过50us的低电平，因此，在2.5MHz的波特率下，连续输出125bit的高电平，
-// 也就是16个byte的0xff，则可以产生：16 × 8 = 128 16 \times 8 = 12816×8=128个1输出，便可以产生128 × 0.4 = 51.2 μ s 128 \times 0.4 = 51.2\mu s128×0.4=51.2μs的低电平。
+// 也就是16个byte的0xff，则可以产生：16 × 8 = 128 16 \times 8 = 128  16×8=128个1输出，便可以产生128 × 0.4 = 51.2 μ s 128 \times 0.4 = 51.2\mu s128×0.4=51.2μs的低电平。
 // 开始发送了BUFFSTARTSIZE既2*24*（0.85+0.4)=60us时间的低电平，相当于重置开始。
 // 然后开始正式发送。
 // 发送完毕所有数据后，停止发送，所有数据被ws2812锁定。
 // 当发送的数据多于灯数量时，多余的被丢弃，相当于尾端没有接收。
-// 注:  缓冲区多余的数据在最后被置全部为零
+// 注1:  缓冲区多余的数据在最后被置全部为零
 // ws2812要求连续发送，当进去中断函数时，这个函数执行时间不能超过50us
 // stm32f103指令周期1.25MIPS/Mhz，72M是72*1.25。每个指令执行周期为1M（us）/72*1.25M=0.011us
 // 不会导致ws2812锁定当前帧数据
+// 注2：新旧数据覆盖问题。本ws2812实现中，存在新数据覆盖旧数据问题，加入有一个较多数量的led灯珠如33个，需要0.99ms发送完毕，程序在1ms时发送第一批数据，1.99ms时才能发送完毕
+// 假如在1.5ms时更新了数组数据，那么1.5ms~1.99ms之间发送的数据是新的，1ms~1.5ms之间发送的数据是旧的。
+// 要注意数据发送的时间间隔。或者使用ws2812b_IsReady()函数判读dma是否在运作。
+// 发送1个bit需要1.25us，1个灯珠就需要1.25 * 24 = 30us，33个灯珠30 * 30 = 990us,约等于1ms
+// 除非stm32工作在突发模式（Burst Mode），或者块传输模式（Block Transfer Mode）。这种模式下CPU必须等DMA传输完整块数据后才能访存。
+// 第二种是Cycle Stealing Mode（不知道中文怎么翻译，循环窃取模式？），每传输一个字节会马上把内存总线控制器交还给CPU并且发出控制请求。
+// 如果这个时候CPU需要访问内存则可以马上获得内存总线的控制权对内存进行访问，CPU不需访问内存则马上获得总线控制权传输下一个字节。
+// 第三种是透明模式（Transparent Mode）。设备只在CPU不使用内存控制器的时候传输数据。这是最高效的模式，但为了判断CPU什么时候访问内存什么时候不访问，硬件上的实现复杂很多。
+// DMA 控制器和Cortex-M3核共享系统数据总线执行直接存储器数据传输。
+// 当CPU和DMA同时访问相同的目标(RAM或外设)时，DMA请求可能会停止 CPU访问系统总线达若干个周期，总线仲裁器执行循环调度，以保证CPU至少可以得到一半的系统总线(存储器或外设)带宽。
 static void DMASend(SrcFilter_t *filter, void *src, unsigned count)
 {
   if (!DMABusy)
@@ -262,13 +272,13 @@ void WS2812B_DMA_HANDLER(void)
   if (DMA_GetITStatus(WS2812B_DMA_IT_HT) != RESET)
   {
     DMA_ClearITPendingBit(WS2812B_DMA_IT_HT);
-    DMASendNext(DMABuffer, &DMABuffer[WS2812B_BUFFER_SIZE / 2]);
+    DMASendNext(DMABuffer, &DMABuffer[WS2812B_BUFFER_SIZE / 2]);                              // 将数据放入发送缓冲区
   }
 
   if (DMA_GetITStatus(WS2812B_DMA_IT_TC) != RESET)
   {
     DMA_ClearITPendingBit(WS2812B_DMA_IT_TC);
-    DMASendNext(&DMABuffer[WS2812B_BUFFER_SIZE / 2], &DMABuffer[WS2812B_BUFFER_SIZE]);
+    DMASendNext(&DMABuffer[WS2812B_BUFFER_SIZE / 2], &DMABuffer[WS2812B_BUFFER_SIZE]);        // 将数据放入发送缓冲区
   }
 }
 
