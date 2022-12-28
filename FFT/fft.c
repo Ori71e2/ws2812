@@ -34,11 +34,11 @@ void GetPowerMag(void)
 	#if 1
 	for(i=0; i<SAMPLS_NUM/2; i++)
 	{
-		lX = (FFT_OutData[i] << 16) >> 16;
-		lY = (FFT_OutData[i] >> 16);
+		lX = (FFT_OutData[i] << 16) >> 16;              // 取低16位；先向高位移动16位，高位被低位取代，低位为0；然后再向低位移动16位，这样高位全为0。
+		lY = (FFT_OutData[i] >> 16);                    // 取高16位。
 		
-		X = SAMPLS_NUM * ((float)lX) / 32768;
-		Y = SAMPLS_NUM * ((float)lY) / 32768;
+		X = SAMPLS_NUM * ((float)lX) / 32768;           // 32768 = 0x8000
+		Y = SAMPLS_NUM * ((float)lY) / 32768;           // 
 		
 		Mag = sqrt(X * X + Y * Y) / SAMPLS_NUM;
 		
@@ -59,6 +59,7 @@ void GetPowerMag(void)
 	#endif
 }
 
+// 从adc数据源复制数据
 void Get_FFT_Source_Data(EN_FFT_CHANNEL channel_idx)
 {
 	uint16_t i;
@@ -80,6 +81,7 @@ void FFT_test(void)
 	Get_FFT_Source_Data(FFT_CHANNEL_1);
 	cr4_fft_1024_stm32(FFT_OutData, FFT_SourceData, SAMPLS_NUM);
 	GetPowerMag();
+	fft_show_led(FFT_Mag);
 }
 
 void Test_Time_Func(void)			//test time

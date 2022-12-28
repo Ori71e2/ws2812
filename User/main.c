@@ -5,6 +5,7 @@
 #include "time.h"
 #include "mike.h"
 #include "test.h"
+#include "fft.h"
 
 int main() {
   led_Init();
@@ -16,7 +17,7 @@ int main() {
 		{
 			mike_StartCollected();
 			// Test_Time_Func();				//512Hz采样频率，采样1024点，可以看到2s钟周期执行FFT_test();
-			// FFT_test();
+			FFT_test();
 		}
   }
 }
