@@ -1,5 +1,6 @@
 #include "mike.h"
 #include "mike_conf.h"
+#include "OLED.h"
 // extern 碰到 static 时会失效的，这里定义不要在前面加上static，因为会被其它文件引用
 #if SINGLECHANNEL
 uint16_t ADC_SourceData[SAMPLS_NUM] = {0};
@@ -33,19 +34,16 @@ void mike_Init(void)
 	// ADC_DMA_Configuration();
 	// ADC_Configuration();
 
-
-	RCC_APB1PeriphClockCmd(MIKE_APB1_RCC, ENABLE);        // 使能定时器总线
-	RCC_APB2PeriphClockCmd(MIKE_APB2_RCC, ENABLE);				// 使能GPIOB总线
-	RCC_AHBPeriphClockCmd(MIKE_AHB_RCC, ENABLE);          // DMA总线使能， RCC_AHBPeriph_DMA1, AHB=Advanced High Performance Bus，高级高性能总线。
-
+	RCC_APB1PeriphClockCmd(MIKE_APB1_RCC_TIM, ENABLE);    // 使能定时器总线
+	RCC_APB2PeriphClockCmd(MIKE_APB2_RCC_GPIO | MIKE_APB2_RCC_ADC, ENABLE);		// 使能GPIOB总线
+	RCC_AHBPeriphClockCmd(MIKE_AHB_RCC_DMA, ENABLE);      // DMA总线使能， RCC_AHBPeriph_DMA1, AHB=Advanced High Performance Bus，高级高性能总线。
+	// RCC_APB2PeriphClockCmd(MIKE_APB2_RCC_ADC, ENABLE);    // ADC总线使能
 
 	GPIO_InitTypeDef GPIO_InitStructure;
- 
 	GPIO_InitStructure.GPIO_Pin = MIKE_GPIO_PIN;		     // 管脚0
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AIN;				 // 模拟输入模式
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
 	GPIO_Init(MIKE_GPIO, &GPIO_InitStructure);					 // GPIO组
-	
 
 	TIM_TimeBaseInitTypeDef TIM_TimeBaseInitStructure; 
 	// 1 / 1000000 * 1952  = 0.001952ms，一次计时完整需要的时间
@@ -55,14 +53,10 @@ void mike_Init(void)
 	TIM_TimeBaseInitStructure.TIM_ClockDivision = TIM_CKD_DIV1;				  // 时钟分频，不分频，TIM2-TIM5是通用定时器，基本定时器不用设置
 	TIM_TimeBaseInitStructure.TIM_CounterMode = TIM_CounterMode_Up;			// 向上扫描
 	TIM_TimeBaseInit(MIKE_TIM, &TIM_TimeBaseInitStructure);
-	
 	TIM_SelectOutputTrigger(MIKE_TIM, TIM_TRGOSource_Update);					  // 选择TRGO作为触发源，为ADC识别，同时触发计时器更新时间
-
 	TIM_Cmd(MIKE_TIM, ENABLE);															            // 开启定时器
 
-
 	DMA_InitTypeDef  DMA_InitStructure;
-
 	DMA_DeInit(MIKE_DMA_CHANNEL);
 	DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t) & MIKE_DMA_ADC_DR;              // ADC_DR数据寄存器保存了ADC转换后的数值，以它作为DMA的传输源地址
 	DMA_InitStructure.DMA_MemoryBaseAddr     = (u32)ADC_SourceData;
@@ -77,11 +71,9 @@ void mike_Init(void)
 	DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_HalfWord;
 	DMA_InitStructure.DMA_MemoryDataSize     = DMA_MemoryDataSize_HalfWord;
 	DMA_InitStructure.DMA_Mode               = DMA_Mode_Circular;
-	DMA_InitStructure.DMA_Priority           = DMA_Priority_High;
+	DMA_InitStructure.DMA_Priority           = DMA_Priority_High;                         // DMA优先级
 	DMA_InitStructure.DMA_M2M                = DMA_M2M_Disable;
 	DMA_Init(MIKE_DMA_CHANNEL, &DMA_InitStructure);
-
-	DMA_Cmd(MIKE_DMA_CHANNEL, ENABLE);//使能DMA	
 
 	// ADC_DMA_NVIC_Configuration嵌套向量中断控制器（NVIC）
 	NVIC_InitTypeDef NVIC_InitStructure;
@@ -92,13 +84,10 @@ void mike_Init(void)
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
 	NVIC_Init(&NVIC_InitStructure);
 
+	DMA_ClearITPendingBit(MIKE_DMA_IT_TC);
 	DMA_ITConfig(MIKE_DMA_CHANNEL, MIKE_DMA_IT_TC, ENABLE);
 
-	DMA_ClearITPendingBit(MIKE_DMA_IT_TC);
-
 	ADC_InitTypeDef  ADC_InitStructure;
-
-	RCC_APB2PeriphClockCmd(RCC_APB2Periph_ADC1, ENABLE);
 	
 	RCC_ADCCLKConfig(RCC_PCLK2_Div6);                                 // 配置ADC时钟为6分频，即12MHz
 
@@ -115,7 +104,7 @@ void mike_Init(void)
 	ADC_InitStructure.ADC_ExternalTrigConv   = MIKE_ADC_EXTRIG;				// 选择TIM3外部触发
 	ADC_InitStructure.ADC_DataAlign          = ADC_DataAlign_Right;   // 转化结果右对齐
 	ADC_Init(MIKE_ADC, &ADC_InitStructure);
-
+	ADC_ExternalTrigConvCmd(MIKE_ADC, ENABLE);
 	//==========================================================================   
 	ADC_RegularChannelConfig(MIKE_ADC, MIKE_CHANNEL,  MIKE_CHANNEL_RANK, ADC_SampleTime_239Cycles5);	//AI_VS_A1 转换通道、转换顺序、采样时间（这里是239.5个周期）
 	#if (!SINGLECHANNEL)
@@ -123,22 +112,23 @@ void mike_Init(void)
 	ADC_RegularChannelConfig(MIKE_ADC, ADC_Channel_5,  3, ADC_SampleTime_239Cycles5);	//AI_VS_C1
 	#endif
 
-	ADC_DMACmd(MIKE_ADC, ENABLE);
-	
 	ADC_Cmd(MIKE_ADC, ENABLE);
-	
-	ADC_ResetCalibration(MIKE_ADC);
-	while(ADC_GetResetCalibrationStatus(MIKE_ADC));
-	ADC_StartCalibration(MIKE_ADC);
-	while(ADC_GetCalibrationStatus(MIKE_ADC));
+	ADC_DMACmd(MIKE_ADC, ENABLE);
 
-	ADC_ExternalTrigConvCmd(MIKE_ADC, ENABLE);
+	ADC_ResetCalibration(MIKE_ADC);                     // 复位指定的ADC1的校准寄存器
+	while(ADC_GetResetCalibrationStatus(MIKE_ADC));     // 获取ADC1复位校准寄存器的状态,设置状态则等待
+	ADC_StartCalibration(MIKE_ADC);                     // 开始指定ADC1的校准状态
+	while(ADC_GetCalibrationStatus(MIKE_ADC));          // 获取指定ADC1的校准程序,设置状态则等待
+
 	//ADC_SoftwareStartConvCmd(MIKE_ADC, ENABLE);
+
+	DMA_Cmd(MIKE_DMA_CHANNEL, ENABLE);//使能DMA	
 }
 
 //ADC_DMA中断服务程序
 void MIKE_DMA_HANDLER(void)
 {
+	OLED_ShowNum(5, 1, ADCFinish, 5);
 	if(DMA_GetITStatus(MIKE_DMA_IT_TC) != RESET)
 	{
 		ADCFinish = 1;

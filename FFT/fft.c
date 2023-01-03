@@ -77,7 +77,7 @@ void Get_FFT_Source_Data(EN_FFT_CHANNEL channel_idx)
 
 void FFT_test(void)
 {
-	//InitBufInArray();
+	// InitBufInArray();
 	Get_FFT_Source_Data(FFT_CHANNEL_1);
 	cr4_fft_1024_stm32(FFT_OutData, FFT_SourceData, SAMPLS_NUM);
 	GetPowerMag();
