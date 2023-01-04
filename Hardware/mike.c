@@ -128,7 +128,6 @@ void mike_Init(void)
 //ADC_DMA中断服务程序
 void MIKE_DMA_HANDLER(void)
 {
-	OLED_ShowNum(5, 1, ADCFinish, 5);
 	if(DMA_GetITStatus(MIKE_DMA_IT_TC) != RESET)
 	{
 		ADCFinish = 1;

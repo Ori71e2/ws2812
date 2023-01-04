@@ -40,23 +40,40 @@
 #define WS2812B_APB2_RCC        RCC_APB2Periph_GPIOB
 
 #define WS2812B_AHB_RCC         RCC_AHBPeriph_DMA1
-
+// TIM4_CH2，端口GPIPB Pin7，DMA1 channel4 三个一组
 #define WS2812B_GPIO            GPIOB
-#define WS2812B_GPIO_PIN        GPIO_Pin_6
+#define WS2812B_GPIO_PIN        GPIO_Pin_7
 
 #define WS2812B_TIM             TIM4
-#define WS2812B_TIM_OCINIT      TIM_OC1Init
-#define WS2812B_TIM_OCPRELOAD   TIM_OC1PreloadConfig
-#define WS2812B_TIM_DMA_CC      TIM_DMA_CC1
-#define WS2812B_TIM_DMA_CCR     (WS2812B_TIM->CCR1)
+#define WS2812B_TIM_OCINIT      TIM_OC2Init
+#define WS2812B_TIM_OCPRELOAD   TIM_OC2PreloadConfig
+#define WS2812B_TIM_DMA_CC      TIM_DMA_CC2
+#define WS2812B_TIM_DMA_CCR     (WS2812B_TIM->CCR2)
 
 #define WS2812B_DMA             DMA1
-#define WS2812B_DMA_CHANNEL     DMA1_Channel1
-#define WS2812B_DMA_IRQ         DMA1_Channel1_IRQn
+#define WS2812B_DMA_CHANNEL     DMA1_Channel4
+#define WS2812B_DMA_IRQ         DMA1_Channel4_IRQn
 
-#define WS2812B_DMA_HANDLER     DMA1_Channel1_IRQHandler
-#define WS2812B_DMA_IT_TC       DMA1_IT_TC1
-#define WS2812B_DMA_IT_HT       DMA1_IT_HT1
+#define WS2812B_DMA_HANDLER     DMA1_Channel4_IRQHandler
+#define WS2812B_DMA_IT_TC       DMA1_IT_TC4
+#define WS2812B_DMA_IT_HT       DMA1_IT_HT4
+// TIM4_CH1，端口GPIPB Pin6，DMA1 channel1 三个一组，之所以不用这个配置，因为DMA1 channel1要被adc1使用
+// #define WS2812B_GPIO            GPIOB
+// #define WS2812B_GPIO_PIN        GPIO_Pin_6
+
+// #define WS2812B_TIM             TIM4
+// #define WS2812B_TIM_OCINIT      TIM_OC1Init
+// #define WS2812B_TIM_OCPRELOAD   TIM_OC1PreloadConfig
+// #define WS2812B_TIM_DMA_CC      TIM_DMA_CC1
+// #define WS2812B_TIM_DMA_CCR     (WS2812B_TIM->CCR1)
+
+// #define WS2812B_DMA             DMA1
+// #define WS2812B_DMA_CHANNEL     DMA1_Channel1
+// #define WS2812B_DMA_IRQ         DMA1_Channel1_IRQn
+
+// #define WS2812B_DMA_HANDLER     DMA1_Channel1_IRQHandler
+// #define WS2812B_DMA_IT_TC       DMA1_IT_TC1
+// #define WS2812B_DMA_IT_HT       DMA1_IT_HT1
 
 #define WS2812B_IRQ_PRIO        0
 #define WS2812B_IRQ_SUBPRIO     0
