@@ -3,7 +3,7 @@
 #include "stm32_dsp.h"
 #include "table_fft.h"
 #include "math.h"
-
+#include "OLED.h"
 uint32_t FFT_SourceData[SAMPLS_NUM] = {0};	//
 uint32_t FFT_OutData[SAMPLS_NUM] = {0};		//
 uint32_t FFT_Mag[SAMPLS_NUM/2] = {0};		  // 
@@ -79,9 +79,13 @@ void FFT_test(void)
 {
 	// InitBufInArray();
 	Get_FFT_Source_Data(FFT_CHANNEL_1);
-	cr4_fft_1024_stm32(FFT_OutData, FFT_SourceData, SAMPLS_NUM);
+	cr4_fft_64_stm32(FFT_OutData, FFT_SourceData, SAMPLS_NUM);
 	GetPowerMag();
-	fft_show_led(FFT_Mag);
+	// OLED_ShowNum(2, 1, ADC_SourceData[0], 5);
+	// OLED_ShowNum(3, 1, ADC_SourceData[10], 5);
+	// OLED_ShowNum(3, 1, ADC_SourceData[20], 5);
+	// OLED_ShowNum(4, 1, ADC_SourceData[30], 5);
+	fft_liner_show_led(FFT_Mag);
 }
 
 void Test_Time_Func(void)			//test time

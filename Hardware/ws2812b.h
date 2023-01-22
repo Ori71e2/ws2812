@@ -25,7 +25,7 @@
 
 #include <stdint.h>
 #include "bitmap.h"
-
+#define NUM_LEDS    60
 void ws2812b_Init(void);
 
 int ws2812b_IsReady(void);

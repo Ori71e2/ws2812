@@ -492,21 +492,31 @@ void led_Fill_Solid_HEX(HEX_t *start, uint32_t count, HEX_t color)
 void led_Fill_Gradient_RGB(RGB_t *start, uint32_t count, RGB_t startColor, RGB_t endColor)
 {
 	int32_t r, g, b;
-	for (int32_t i = 1; i < count - 1; i++)
+	if (count >= 2)
 	{
-		r = ((int32_t)(startColor.r) + ((int32_t)endColor.r - (int32_t)startColor.r) * i / ((int32_t)count - 1));
-		g = ((int32_t)(startColor.g) + ((int32_t)endColor.g - (int32_t)startColor.g) * i / ((int32_t)count - 1));
-		b = ((int32_t)(startColor.b) + ((int32_t)endColor.b - (int32_t)startColor.b) * i / ((int32_t)count - 1));
-		(start + i)->r = (uint8_t)(r);
-		(start + i)->g = (uint8_t)(g);
-		(start + i)->b = (uint8_t)(b);
+		for (int32_t i = 1; i < count - 1; i++)
+		{
+			r = ((int32_t)(startColor.r) + ((int32_t)endColor.r - (int32_t)startColor.r) * i / ((int32_t)count - 1));
+			g = ((int32_t)(startColor.g) + ((int32_t)endColor.g - (int32_t)startColor.g) * i / ((int32_t)count - 1));
+			b = ((int32_t)(startColor.b) + ((int32_t)endColor.b - (int32_t)startColor.b) * i / ((int32_t)count - 1));
+			(start + i)->r = (uint8_t)(r);
+			(start + i)->g = (uint8_t)(g);
+			(start + i)->b = (uint8_t)(b);
+		}
+		start->r = startColor.r;
+		start->g = startColor.g;
+		start->b = startColor.b;
+		(start + count - 1)->r = endColor.r;
+		(start + count - 1)->g = endColor.g;
+		(start + count - 1)->b = endColor.b;
+	} 
+	else if (count == 1)
+	{
+		start->r = startColor.r;
+		start->g = startColor.g;
+		start->b = startColor.b;
 	}
-	start->r = startColor.r;
-	start->g = startColor.g;
-	start->b = startColor.b;
-	(start + count - 1)->r = endColor.r;
-	(start + count - 1)->g = endColor.g;
-	(start + count - 1)->b = endColor.b;
+
 }
 
 void led_Fill_Gradient_HSV(HSV_t *start, uint32_t count, HSV_t startColor, HSV_t endColor)
@@ -516,17 +526,26 @@ void led_Fill_Gradient_HSV(HSV_t *start, uint32_t count, HSV_t startColor, HSV_t
 	RGB_t rgbEndColor;
 	HSV2RGB(&startColor, &rgbStartColor);
 	HSV2RGB(&endColor, &rgbEndColor);
-	led_Fill_Gradient_RGB(rgbStart, count, rgbStartColor, rgbEndColor);
-	for (int i = 1; i < count - 1; i++)
+	if (count >= 2)
 	{
-		RGB2HSV((rgbStart+i), (start + i));
+	  led_Fill_Gradient_RGB(rgbStart, count, rgbStartColor, rgbEndColor);
+		for (int i = 1; i < count - 1; i++)
+		{
+			RGB2HSV((rgbStart+i), (start + i));
+		}
+		start->h = startColor.h;
+		start->s = startColor.s;
+		start->v = startColor.v;
+		(start + count - 1)->h = endColor.h;
+		(start + count - 1)->s = endColor.s;
+		(start + count - 1)->v = endColor.v;
+	} 
+	else if (count == 1)
+	{
+		start->h = startColor.h;
+		start->s = startColor.s;
+		start->v = startColor.v;
 	}
-	start->h = startColor.h;
-	start->s = startColor.s;
-	start->v = startColor.v;
-	(start + count - 1)->h = endColor.h;
-	(start + count - 1)->s = endColor.s;
-	(start + count - 1)->v = endColor.v;
 }
 
 void led_Fill_Gradient_HEX(HEX_t *start, uint32_t count, HEX_t startColor, HEX_t endColor)

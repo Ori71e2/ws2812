@@ -35,7 +35,7 @@ void mike_Init(void)
 	// ADC_Configuration();
 
 	RCC_APB1PeriphClockCmd(MIKE_APB1_RCC_TIM, ENABLE);    // 使能定时器总线
-	RCC_APB2PeriphClockCmd(MIKE_APB2_RCC_GPIO | MIKE_APB2_RCC_ADC, ENABLE);		// 使能GPIOB总线
+	RCC_APB2PeriphClockCmd(MIKE_APB2_RCC_GPIO | MIKE_APB2_RCC_ADC, ENABLE);		// 使能GPIOA总线
 	RCC_AHBPeriphClockCmd(MIKE_AHB_RCC_DMA, ENABLE);      // DMA总线使能， RCC_AHBPeriph_DMA1, AHB=Advanced High Performance Bus，高级高性能总线。
 	// RCC_APB2PeriphClockCmd(MIKE_APB2_RCC_ADC, ENABLE);    // ADC总线使能
 

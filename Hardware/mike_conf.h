@@ -12,13 +12,12 @@
 #define SINGLECHANNEL 1
 
 #define ADC_CHANNEL_NUMS 	3
-#define SAMPLS_NUM        1024
-
-// #define MIKE_BUFFER_SIZE     60
-// #define MIKE_START_SIZE      2
+#define SAMPLS_NUM        64
+// DMA1的通道1对应ADC1
+// ADC1的通道0对应的GPIOA的Pin_0端口
 
 #define MIKE_APB1_RCC_TIM    RCC_APB1Periph_TIM3
-#define MIKE_APB2_RCC_GPIO   RCC_APB2Periph_GPIOB
+#define MIKE_APB2_RCC_GPIO   RCC_APB2Periph_GPIOA
 #define MIKE_APB2_RCC_ADC    RCC_APB2Periph_ADC1
 #define MIKE_AHB_RCC_DMA     RCC_AHBPeriph_DMA1
 
@@ -43,14 +42,21 @@
 #define MIKE_IRQ_SUBPRIO     1
 
 #define MIKE_FREQUENCY       1000000
-#define MIKE_PERIOD          1953
+// #define MIKE_PERIOD          488         // 1 / 1000000 * 488  = 0.000488s = 0.48ms, 64个数据一次dma转运进入中断, 计算周期时长为 0.488 * 64 = 31.232ms
+// #define MIKE_PERIOD          976         // 1 / 1000000 * 976  = 0.000976s = 0.976ms 0.976 * 64 = 62.646ms
+#define MIKE_PERIOD          (488 * 3)   // 约93ms
 
 #define MIKE_PULSE_HIGH      21
 #define MIKE_PULSE_LOW       9
 
 #define MIKE_ADC             ADC1
 #define MIKE_ADC_EXTRIG      ADC_ExternalTrigConv_T3_TRGO
-#define MIKE_CHANNEL         ADC_Channel_1                     // ADC1通道8对应的是GPIOB_Pin_0
+#define MIKE_CHANNEL         ADC_Channel_0                     // ADC1通道0对应的是GPIOB_Pin_0
 #define MIKE_CHANNEL_RANK    1
 #define MIKE_DMA_ADC_DR      (MIKE_ADC->DR)
+
+#define VCC                  3.3
+#define MIKE_VCC             5.0
+#define MIKE_OUT_MAX_VOLTAGE     3.3
+#define MIKE_OUT_MAX_ADC_VALUE   (MIKE_OUT_MAX_VOLTAGE / VCC * 4096)
 #endif //__MIKE_CONF_H
