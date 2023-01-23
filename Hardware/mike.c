@@ -2,11 +2,7 @@
 #include "mike_conf.h"
 #include "OLED.h"
 // extern 碰到 static 时会失效的，这里定义不要在前面加上static，因为会被其它文件引用
-#if SINGLECHANNEL
 uint16_t ADC_SourceData[SAMPLS_NUM] = {0};
-#else
-uint16_t ADC_SourceData[SAMPLS_NUM][ADC_CHANNEL_NUMS] = {0};
-#endif
 
 // #if SINGLECHANNEL
 // static uint16_t ADC_BUFFER[MIKE_BUFFER_SIZE];
@@ -61,11 +57,7 @@ void mike_Init(void)
 	DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t) & MIKE_DMA_ADC_DR;              // ADC_DR数据寄存器保存了ADC转换后的数值，以它作为DMA的传输源地址
 	DMA_InitStructure.DMA_MemoryBaseAddr     = (u32)ADC_SourceData;
 	DMA_InitStructure.DMA_DIR                = DMA_DIR_PeripheralSRC;                     // 设置DMA的传输方向，单向传输（DMA_DIR_PeripheralDST，双向传输）
-	#if SINGLECHANNEL
 	DMA_InitStructure.DMA_BufferSize         = sizeof(ADC_SourceData) / sizeof(uint16_t); // SAMPLS_NUM
-	#else
-	DMA_InitStructure.DMA_BufferSize         = sizeof(ADC_SourceData) / sizeof(uint16_t); // ADC_CHANNEL_NUMS*SAMPLS_NUM
-	#endif
 	DMA_InitStructure.DMA_PeripheralInc      = DMA_PeripheralInc_Disable;
 	DMA_InitStructure.DMA_MemoryInc          = DMA_MemoryInc_Enable;
 	DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_HalfWord;
@@ -93,13 +85,8 @@ void mike_Init(void)
 
 	ADC_DeInit(MIKE_ADC);
 	ADC_InitStructure.ADC_Mode               = ADC_Mode_Independent;  // 独立模式
-	#if SINGLECHANNEL
 	ADC_InitStructure.ADC_ScanConvMode       = DISABLE;								// 如果是单通道，关闭扫描模式
 	ADC_InitStructure.ADC_NbrOfChannel       = 1;                     // 单通道，通道数量为1
-	#else
-	ADC_InitStructure.ADC_ScanConvMode       = ENABLE;								// 如果是多通道，打开扫描模式
-	ADC_InitStructure.ADC_NbrOfChannel       = ADC_CHANNEL_NUMS;      // 多通道
-	#endif
 	ADC_InitStructure.ADC_ContinuousConvMode = DISABLE;               // 非连续转换
 	ADC_InitStructure.ADC_ExternalTrigConv   = MIKE_ADC_EXTRIG;				// 选择TIM3外部触发
 	ADC_InitStructure.ADC_DataAlign          = ADC_DataAlign_Right;   // 转化结果右对齐
@@ -107,10 +94,6 @@ void mike_Init(void)
 	ADC_ExternalTrigConvCmd(MIKE_ADC, ENABLE);
 	//==========================================================================   
 	ADC_RegularChannelConfig(MIKE_ADC, MIKE_CHANNEL,  MIKE_CHANNEL_RANK, ADC_SampleTime_239Cycles5);	//AI_VS_A1 转换通道、转换顺序、采样时间（这里是239.5个周期）
-	#if (!SINGLECHANNEL)
-	ADC_RegularChannelConfig(MIKE_ADC, ADC_Channel_4,  2, ADC_SampleTime_239Cycles5);	//AI_VS_B1
-	ADC_RegularChannelConfig(MIKE_ADC, ADC_Channel_5,  3, ADC_SampleTime_239Cycles5);	//AI_VS_C1
-	#endif
 
 	ADC_Cmd(MIKE_ADC, ENABLE);
 	ADC_DMACmd(MIKE_ADC, ENABLE);

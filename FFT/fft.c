@@ -60,30 +60,27 @@ void GetPowerMag(void)
 }
 
 // 从adc数据源复制数据
-void Get_FFT_Source_Data(EN_FFT_CHANNEL channel_idx)
+void Get_FFT_Source_Data()
 {
 	uint16_t i;
   // uint16_t j;
 
 	for(i=0; i<SAMPLS_NUM; i++)
 	{
-		#if SINGLECHANNEL
 		FFT_SourceData[i] = (uint32_t)(ADC_SourceData[i]);
-		#else
-		FFT_SourceData[i] = (uint32_t)(ADC_SourceData[i][channel_idx]);
-		#endif
 	}
 }
 
 void FFT_test(void)
 {
 	// InitBufInArray();
-	Get_FFT_Source_Data(FFT_CHANNEL_1);
+	Get_FFT_Source_Data();
 	cr4_fft_64_stm32(FFT_OutData, FFT_SourceData, SAMPLS_NUM);
 	GetPowerMag();
-	// OLED_ShowNum(2, 1, ADC_SourceData[0], 5);
-	// OLED_ShowNum(3, 1, ADC_SourceData[10], 5);
-	// OLED_ShowNum(3, 1, ADC_SourceData[20], 5);
+	OLED_ShowNum(2, 1, FFT_Mag[1], 5);
+	OLED_ShowNum(3, 1, FFT_Mag[10], 5);
+	OLED_ShowNum(4, 1, FFT_Mag[20], 5);
+	OLED_ShowNum(4, 1, FFT_Mag[31], 5);
 	// OLED_ShowNum(4, 1, ADC_SourceData[30], 5);
 	fft_liner_show_led(FFT_Mag);
 }

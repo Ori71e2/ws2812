@@ -9,9 +9,6 @@
 #include <stm32f10x_dma.h>
 #include <misc.h>
 
-#define SINGLECHANNEL 1
-
-#define ADC_CHANNEL_NUMS 	3
 #define SAMPLS_NUM        64
 // DMA1的通道1对应ADC1
 // ADC1的通道0对应的GPIOA的Pin_0端口

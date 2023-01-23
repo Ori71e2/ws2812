@@ -23,8 +23,8 @@ void fft_liner_show_led(uint32_t *fft_mag)
 		i_num = NUM_LEDS;
 	}
 	
-	OLED_ShowNum(3, 1, i_num, 5);
-	OLED_ShowNum(4, 1, max_value, 5);
+	// OLED_ShowNum(3, 1, i_num, 5);
+	// OLED_ShowNum(4, 1, max_value, 5);
 	led_Clear_RGB(ledsRGB, NUM_LEDS);
   // led_Fill_Solid_RGB(ledsRGB, i_num, RGB(255, 0, 0));
 	led_Fill_Gradient_RGB(ledsRGB, NUM_LEDS, RGB(0, 0, 255), RGB(255, 0, 0));

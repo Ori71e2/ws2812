@@ -17,11 +17,7 @@ typedef enum {
 extern "C" {
 #endif
 
-#if SINGLECHANNEL
 extern uint16_t ADC_SourceData[SAMPLS_NUM];
-#else
-extern uint16_t ADC_SourceData[SAMPLS_NUM][ADC_CHANNEL_NUMS];
-#endif
 
 void mike_Init(void);
 int mike_IsCollected(void);
