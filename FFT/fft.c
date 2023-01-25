@@ -82,7 +82,7 @@ void FFT_test(void)
 	OLED_ShowNum(4, 1, FFT_Mag[20], 5);
 	OLED_ShowNum(4, 1, FFT_Mag[31], 5);
 	// OLED_ShowNum(4, 1, ADC_SourceData[30], 5);
-	fft_liner_show_led(FFT_Mag);
+	fft_liner_show_led2();
 }
 
 void Test_Time_Func(void)			//test time

@@ -10,5 +10,6 @@
 void InitBufInArray(void);
 void GetPowerMag(void);
 void FFT_test(void);
-void fft_liner_show_led(uint32_t *fft_mag);
+void fft_liner_show_led1(void);
+void fft_liner_show_led2(void);
 #endif

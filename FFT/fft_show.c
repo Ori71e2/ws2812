@@ -4,9 +4,12 @@
 #include "led.h"
 #include "OLED.h"
 RGB_t ledsRGB[NUM_LEDS];
+RGB_t ledsRGB2[NUM_LEDS];
 HSV_t ledsHSV[NUM_LEDS];
 HSV_t ledsHSV2[NUM_LEDS];
-void fft_liner_show_led(uint32_t *fft_mag)
+static int32_t pre_num = 0, next_num = 0;
+static int32_t first = 0;
+void fft_liner_show_led1(void)
 {
 	uint32_t max_value = 0;
 	for (int i = 0; i < SAMPLS_NUM; i++)
@@ -45,4 +48,56 @@ void fft_liner_show_led(uint32_t *fft_mag)
 	// 	(ledsHSV2 + i)->v = (ledsHSV + i_num - i - 1)->v;
 	// }
 	// led_Show_HSV(ledsHSV2, NUM_LEDS);
+}
+
+void fft_liner_show_led2(void)
+{
+	uint32_t max_value = 0;
+	int32_t gap = 0;
+	for (int i = 0; i < SAMPLS_NUM; i++)
+	{
+		if (max_value < ADC_SourceData[i])
+		{
+			max_value = ADC_SourceData[i];
+		}
+	}
+	float f_num = NUM_LEDS * max_value / MIKE_OUT_MAX_ADC_VALUE;
+	next_num = NUM_LEDS * max_value / MIKE_OUT_MAX_ADC_VALUE;
+	if (NUM_LEDS - f_num < 0.5)
+	{
+		next_num = NUM_LEDS;
+	}
+	gap = next_num - pre_num;
+	if (first == 0)
+	{
+		led_Clear_RGB(ledsRGB, NUM_LEDS);
+		led_Fill_Gradient_RGB(ledsRGB2, NUM_LEDS, RGB(0, 0, 255), RGB(255, 0, 0));
+		first = 1;
+	}
+	if (gap == 0)
+	{
+	}
+	else if (gap > 0)
+	{
+		for (int poisition = pre_num; poisition < next_num; poisition++)
+		{
+			ledsRGB[poisition].r = ledsRGB2[poisition].r;
+			ledsRGB[poisition].g = ledsRGB2[poisition].g;
+			ledsRGB[poisition].b = ledsRGB2[poisition].b;
+			led_Show_RGB(ledsRGB, NUM_LEDS);
+		  delay_us(MIKE_SHOW_GAP_TIME / 1 / gap);	
+		}
+	}
+	else if (gap < 0)
+	{
+		for (int poisition = pre_num - 1; poisition >= next_num; poisition--)
+		{
+			ledsRGB[poisition].r = 0;
+			ledsRGB[poisition].g = 0;
+			ledsRGB[poisition].b = 0;
+			led_Show_RGB(ledsRGB, NUM_LEDS);
+			delay_us(MIKE_SHOW_GAP_TIME / 1 / (-gap));
+		}
+	}
+	pre_num = next_num;
 }
