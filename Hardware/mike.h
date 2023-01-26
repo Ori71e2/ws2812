@@ -4,8 +4,7 @@
 #include <stdint.h>
 #include "stm32f10x.h"
 #include "mike_conf.h"
-
-
+#define SAMPLS_NUM        64
 typedef enum {
 	FFT_CHANNEL_1 = 0,
 	FFT_CHANNEL_2,

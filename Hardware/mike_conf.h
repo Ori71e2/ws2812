@@ -9,7 +9,7 @@
 #include <stm32f10x_dma.h>
 #include <misc.h>
 
-#define SAMPLS_NUM        64
+
 // DMA1的通道1对应ADC1
 // ADC1的通道0对应的GPIOA的Pin_0端口
 
@@ -42,7 +42,7 @@
 // #define MIKE_PERIOD          488         // 1 / 1000000 * 488  = 0.000488s = 0.48ms, 64个数据一次dma转运进入中断, 计算周期时长为 0.488 * 64 = 31.232ms
 // #define MIKE_PERIOD          976         // 1 / 1000000 * 976  = 0.000976s = 0.976ms 0.976 * 64 = 62.646ms
 #define MIKE_PERIOD          (488 * 3)   // 约93ms
-#define MIKE_SHOW_GAP_TIME  (MIKE_PERIOD * SAMPLS_NUM)
+#define MIKE_SHOW_GAP_TIME  (MIKE_PERIOD * SAMPLS_NUM * 0.8)
 
 #define MIKE_PULSE_HIGH      21
 #define MIKE_PULSE_LOW       9
