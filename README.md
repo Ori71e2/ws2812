@@ -66,7 +66,13 @@ FFT频谱
 见第一个release
 
 2）第二版
+链接：https://pan.baidu.com/s/1rWrAiXEtKspxoZfMei_Ogw 
+提取码：6ge9 
+--来自百度网盘超级会员V6的分享
 
+或者
+
+见第二个release
 
 # 感谢
 https://github.com/Silencer2K/stm32f10x-ws2812b-lib.git
