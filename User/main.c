@@ -12,7 +12,7 @@ int main() {
 	mike_Init();
 	OLED_Init();
 	// OLED_ShowNum(1, 1, ADC_SourceData[0], 5);
-	// OLED_ShowChar(1, 1, 'A');
+	OLED_ShowChar(1, 1, 'A');
 	// OLED_ShowString(1, 3, "HelloWorld!");
 	// OLED_ShowNum(2, 1, 12345, 5);
 	// OLED_ShowSignedNum(2, 7, -66, 2);
@@ -22,10 +22,10 @@ int main() {
 	int i = 1;
   while (1)
 	{
+		OLED_ShowNum(1, 1, i++, 5);
 		// arm_sin_cos_example_f32();
 		if(mike_IsCollected())
 		{
-		  OLED_ShowNum(1, 1, i++, 5);
 			mike_StartCollected();
 			FFT_test();
 		}
