@@ -47,7 +47,35 @@ void ssd1306_IO_Init(void)
   SPI_Cmd(SPI1, ENABLE); //使能 SPI 外设
 };
 
-
+void TIM3_Init()
+{
+  TIM_TimeBaseInitTypeDef TIM_TimeBaseInitStructure;  
+ 
+  NVIC_InitTypeDef NVIC_InitStructure;
+ 
+  /* 开启定时器3时钟 */
+  RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3,ENABLE);
+ 
+  TIM_ClearITPendingBit(TIM3,TIM_IT_Update);
+  TIM_ITConfig(TIM3, TIM_IT_Update, DISABLE );  //关闭定时器更新中断
+  
+  TIM_TimeBaseInitStructure.TIM_Period = 50000;
+  TIM_TimeBaseInitStructure.TIM_Prescaler = 7200-1;
+  TIM_TimeBaseInitStructure.TIM_ClockDivision = 0; 
+  TIM_TimeBaseInitStructure.TIM_CounterMode = TIM_CounterMode_Up;
+  TIM_TimeBaseInit(TIM3,&TIM_TimeBaseInitStructure);  
+  TIM_Cmd(TIM3,ENABLE); 
+  
+  /* 设置NVIC参数 */
+  NVIC_PriorityGroupConfig(NVIC_PriorityGroup_1);
+  NVIC_InitStructure.NVIC_IRQChannel=TIM3_IRQn; 
+  NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority=0;  
+  NVIC_InitStructure.NVIC_IRQChannelSubPriority=1; 
+  NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;  
+  NVIC_Init(&NVIC_InitStructure);  
+  
+  TIM_DMACmd(TIM3, TIM_DMA_Update, ENABLE);  //定时器更新事件触发DMA传输
+}
 
 void ssd1306_DMA_Init(void)
 {
@@ -57,13 +85,13 @@ void ssd1306_DMA_Init(void)
   DMA_DeInit(DMA1_Channel3);
 
   DMA_InitStructure.DMA_PeripheralBaseAddr = (u32)&SPI1->DR;              // DMA 外设 ADC 基地址
-  DMA_InitStructure.DMA_MemoryBaseAddr = (u32)ssd1306_SRAM;                  // DMA 内存基地址
+  DMA_InitStructure.DMA_MemoryBaseAddr = (u32)ssd1306_SRAM;               // DMA 内存基地址
   DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralDST;                      //从储存器读取发送到外设
   DMA_InitStructure.DMA_BufferSize = MAX_X * MAX_Y / 8;                   // DMA 通道的 DMA 缓存的大小, 128 * 64 / 8 = 1024
   DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;        //外设地址不变
   DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;                 //内存地址递增
-  DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Byte; // 8 位
-  DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_Byte;         // 8 位
+  DMA_InitStructure.DMA_PeripheralDataSize = DMA_MemoryDataSize_HalfWord; // 8 位
+  DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_HalfWord;         // 8 位
   DMA_InitStructure.DMA_Mode = DMA_Mode_Circular;                         //工作在循环传输模式
   DMA_InitStructure.DMA_Priority = DMA_Priority_Medium;                   // DMA 通道 x 拥有中优先级
   DMA_InitStructure.DMA_M2M = DMA_M2M_Disable;                            //非内存到内存传输
@@ -131,8 +159,16 @@ void ssd1306_Init(void)
 
   ssd1306_SendCmd(0xaf); //开启显示
   ssd1306_SendCmd(0x56);
-
+  // TIM3_Init();
   ssd1306_DMA_Init(); // DMA初始化
+}
+
+void DMA1_Channel3_IRQHandler(void)
+{
+	if(DMA_GetITStatus(DMA1_IT_TC3) != RESET)
+	{
+		DMA_ClearITPendingBit(DMA1_IT_TC3);
+	}
 }
 
 //指定位置显示单字符，X+Y+单字符
@@ -154,8 +190,8 @@ void ssd1306_Clear(void)
 void ssd1306_Fill_all(void)
 {
   for (u8 y = 0; y < MAX_Y / 8; y++)
-      for (u8 x = 0; x < MAX_X / 5; x++)
-        ssd1306_SRAM[y][x] = 'C';
+      for (u8 x = 0; x < MAX_X; x++)
+        ssd1306_SRAM[y][x] = 255;
 }
 char ssd1306_zfc[] = {0}; //字符转化为字符串储存于此数组
 
