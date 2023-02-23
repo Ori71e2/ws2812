@@ -17,7 +17,6 @@ void led_example(void) {
   //  HEX_t ledsHEX[NUM_LEDS];
   RGB_t ledsRGB2[NUM_LEDS];
   HSV_t ledsHSV2[NUM_LEDS];
-  led_Init();
 	while (!led_IsReady()) { }; // wait
 	//
   // Fill ledsRGB buffer
