@@ -15,4 +15,5 @@ int ssd1306_example(void)
 		ssd1306_SetPoint(i, i, 1);
 	}
 	ssd1306_DrawLine(0, 0, MAX_X - 1, MAX_Y - 1, 1);
+	ssd1306_FillRect(0, 0, 40, 40, 1);
 }
