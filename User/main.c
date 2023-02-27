@@ -12,7 +12,7 @@ int main() {
   // led_Init();
 	// mike_Init();
 	// OLED_Init();
-	ssd1306_Init();//ssd1306_SPI
+	ssd1306_Init();
 	ssd1306_example();
   while (1)
 	{
