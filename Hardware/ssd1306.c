@@ -152,9 +152,12 @@ void ssd1306_Write_Char(u8 x, u8 y, u8 *ascii)
 //清屏--全灭
 void ssd1306_Clear(void)
 {
-  for (u8 y = 0; y < 7; y++)
-    for (u8 x = 0; x < 126; x += 6)
-      ssd1306_Write_String(x, y, (u8 *)' ');
+  // for (u8 y = 0; y < 7; y++)
+  //   for (u8 x = 0; x < 126; x += 6)
+  //     ssd1306_Write_String(x, y, (u8 *)' ');
+  for (u8 y = 0; y < MAX_Y / 8; y++)
+    for (u8 x = 0; x < MAX_X; x++)
+      ssd1306_SRAM[y][x] = 0;
 }
 void ssd1306_Fill_all(void)
 {
@@ -188,7 +191,7 @@ void ssd1306_Write_String(u8 x, u8 y, u8 *chr)
   }
 }
 
-void ssd1306_SetPoint(uint8_t x, uint8_t y, uint8_t pointV)
+void ssd1306_SetPoint(uint8_t x, uint8_t y, uint16_t pointV)
 {
 	if( x >= MAX_X || y >= MAX_Y )
 	{

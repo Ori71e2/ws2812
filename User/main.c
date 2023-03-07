@@ -13,7 +13,8 @@ int main() {
 	// mike_Init();
 	// OLED_Init();
 	ssd1306_Init();
-	ssd1306_example();
+	// ssd1306_example();
+	ugui_example();
   while (1)
 	{
 		

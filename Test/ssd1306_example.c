@@ -2,7 +2,7 @@
 #include "delay.h"
 #include "ssd1306.h"
 #include "ssd1306_conf.h"
-int ugui_example(void)
+void ssd1306_example(void)
 {
 	// ssd1306_Fill_all();
   ssd1306_Write_String(0, 0, (uint8_t *)"DRAGON");//在ssd1306屏幕的X轴为0，Y轴为0，显示字符串“DRAGON”
