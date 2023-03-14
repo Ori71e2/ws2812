@@ -14,10 +14,10 @@ int main() {
 	// OLED_Init();
 	ssd1306_Init();
 	// ssd1306_example();
-	ugui_example();
+	
   while (1)
 	{
-		
+		ugui_example();
 		// if(mike_IsCollected())
 		// {
 		// 	mike_StartCollected();
