@@ -197,10 +197,11 @@ void ssd1306_SetPoint(uint8_t x, uint8_t y, uint16_t pointV)
 	{
 		return;
 	}
-	if(pointV == 0)
-	  ssd1306_SRAM[y / 8][x] &= ~(0x1 << (y % 8));
-	else
+	if(pointV != 0)
 	  ssd1306_SRAM[y / 8][x] |= (0x1 << (y % 8));
+	else
+	  ssd1306_SRAM[y / 8][x] &= ~(0x1 << (y % 8));  
+	
 }
 
 /******************************************************************************

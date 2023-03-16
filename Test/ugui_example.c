@@ -4,7 +4,7 @@
 #include "ssd1306_conf.h"
 #include "ugui.h"
 
-void window1_callback(UG_MESSAGE* msg)
+void window0_callback(UG_MESSAGE* msg)
 {
 	if(msg->type == MSG_TYPE_OBJECT)
 	{
@@ -34,38 +34,46 @@ void window1_callback(UG_MESSAGE* msg)
 #define MAX_OBJECTS 10
 void window_test(void)
 {
-	UG_WINDOW window_1;
+	UG_WINDOW window_0;
+	UG_BUTTON button_0;
 	UG_BUTTON button_1;
 	UG_BUTTON button_2;
-	UG_BUTTON button_3;
 	UG_TEXTBOX textbox_1;
-	UG_OBJECT obj_buff_wnd_1[MAX_OBJECTS];
+	UG_OBJECT obj_buff_wnd_0[MAX_OBJECTS];
+  UG_SetBackcolor(C_BLACK);
 	// . . .
-	UG_WindowCreate(&window_1, obj_buff_wnd_1, MAX_OBJECTS, window1_callback);
-	UG_WindowSetTitleText(&window_1, "uGUI Demo Window");
-	UG_WindowSetTitleTextFont(&window_1, &FONT_12X20);
-	UG_ButtonCreate(&window_1, &button_1, BTN_ID_0, 10, 10, 110, 60);
-	// UG_ButtonCreate(&window_1, &button_2, BTN_ID_1, 10, 80, 110, 130);
-	// UG_ButtonCreate(&window_1, &button_3, BTN_ID_2, 10, 150, 110, 200);
-	UG_ButtonSetFont(&window_1, BTN_ID_0, &FONT_12X20);
-	UG_ButtonSetText(&window_1, BTN_ID_0, "Button\nA");
-	// UG_ButtonSetFont(&window_1, BTN_ID_1, &FONT_12X20);
-	// UG_ButtonSetText(&window_1, BTN_ID_1, "Button\nB");
-	// UG_ButtonSetFont(&window_1, BTN_ID_2, &FONT_12X20);
-	// UG_ButtonSetText(&window_1, BTN_ID_2, "Button\nC");
-	// UG_TextboxCreate(&window_1, &textbox_1, TXB_ID_0, 120, 10, 310, 200);
-	// UG_TextboxSetFont(&window_1, TXB_ID_0, &FONT_12X16);
-	// UG_TextboxSetText(&window_1, TXB_ID_0, "This is just \na very simple \nwindow to \ndemonstrate \nsome basic \n features of uGUI!");
-	// UG_TextboxSetForeColor(&window_1, TXB_ID_0, C_BLACK);
-	// UG_TextboxSetAlignment(&window_1, TXB_ID_0, ALIGN_CENTER);
-	UG_WindowShow(&window_1);
+	UG_WindowCreate(&window_0, obj_buff_wnd_0, MAX_OBJECTS, window0_callback);
+	UG_WindowSetTitleTextFont(&window_0, &FONT_4X6);
+	UG_WindowSetTitleColor(&window_0, C_BLACK);
+	UG_WindowSetTitleTextColor(&window_0, C_WHITE);
+	UG_WindowSetTitleText(&window_0, "uGUI Demo Window");
+	UG_ButtonCreate(&window_0, &button_0, BTN_ID_0, 10, 10, 40, 40);
+	// UG_ButtonCreate(&window_0, &button_1, BTN_ID_1, 10, 80, 110, 130);
+	// UG_ButtonCreate(&window_0, &button_2, BTN_ID_2, 10, 150, 110, 200);
+	UG_ButtonSetFont(&window_0, BTN_ID_0, &FONT_4X6);
+	UG_ButtonSetText(&window_0, BTN_ID_0, "Button\nA");
+	// UG_ButtonSetFont(&window_0, BTN_ID_1, &FONT_8X8);
+	// UG_ButtonSetText(&window_0, BTN_ID_1, "Button\nB");
+	// UG_ButtonSetFont(&window_0, BTN_ID_2, &FONT_8X8);
+	// UG_ButtonSetText(&window_0, BTN_ID_2, "Button\nC");
+	// UG_TextboxCreate(&window_0, &textbox_1, TXB_ID_0, 120, 10, 310, 200);
+	// UG_TextboxSetFont(&window_0, TXB_ID_0, &FONT_12X16);
+	// UG_TextboxSetText(&window_0, TXB_ID_0, "This is just \na very simple \nwindow to \ndemonstrate \nsome basic \n features of uGUI!");
+	// UG_TextboxSetForeColor(&window_0, TXB_ID_0, C_BLACK);
+	// UG_TextboxSetAlignment(&window_0, TXB_ID_0, ALIGN_CENTER);
+	UG_WindowShow(&window_0);
+	UG_Update();
 	// . . .
 }
 void ugui_example(void)
 {
 	UG_GUI my_ugui1;
 	//初始化函数
-	UG_Init(&my_ugui1, ssd1306_SetPoint, MAX_X, MAX_Y);
+	UG_Init(&my_ugui1, (void *)ssd1306_SetPoint, MAX_X, MAX_Y);
+	// UG_DriverRegister(DRIVER_DRAW_LINE, (void *)ssd1306_DrawLine);
+	// UG_DriverRegister(DRIVER_FILL_FRAME, (void *)ssd1306_FillRect);
+	// UG_DriverEnable(DRIVER_DRAW_LINE);
+	// UG_DriverEnable(DRIVER_FILL_FRAME);
 	//选择GUI
 	// delay_ms(500);
 	// ssd1306_Clear();
@@ -109,10 +117,8 @@ void ugui_example(void)
 	// delay_ms(1000);
 	// ssd1306_Clear();
 	// //字符串测试
-	// UG_FontSelect(&FONT_16X26);
-	// UG_SetBackcolor(C_BLACK);
-	// UG_SetForecolor(C_WHITE);
-	// UG_PutString(0, 0, "Hello Wlord!");
+	UG_FontSelect(&FONT_16X26);
+	UG_PutString(0, 0, "Hello Wlord!");
 	delay_ms(1000);
 	ssd1306_Clear();
 	window_test();

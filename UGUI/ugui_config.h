@@ -12,7 +12,7 @@
 #define USE_COLOR_RGB565   // RGB = 0bRRRRRGGGGGGBBBBB
 
 /* Enable needed fonts here */
-//#define  USE_FONT_4X6
+#define  USE_FONT_4X6
 //#define  USE_FONT_5X8
 //#define  USE_FONT_5X12
 //#define  USE_FONT_6X8
