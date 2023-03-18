@@ -113,6 +113,11 @@ void ugui_example(void)
 	// 选择GUI
 	delay_ms(500);
 	ssd1306_Clear();
+	//字符串测试
+	UG_FontSelect(&FONT_10X16);
+	UG_PutString(0, 0, "Test Start");
+	delay_ms(1000);
+	ssd1306_Clear();
 	//全屏填充函数
 	UG_FillScreen(C_WHITE);
 	delay_ms(1000);

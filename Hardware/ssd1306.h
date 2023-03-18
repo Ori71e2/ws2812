@@ -29,11 +29,11 @@ void ssd1306_Write_String(u8 x, u8 y, u8 *chr);
 void ssd1306_Init(void);     // ssd1306初始化
 void ssd1306_DMA_Init(void); // DMA初始化
 
-void ssd1306_SetPoint(uint8_t x, uint8_t y, uint16_t pointV);
-void ssd1306_DrawLine(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1 , uint16_t color);
-void ssd1306_DrawHLine(uint16_t x0, uint16_t y0, uint16_t x1 , uint16_t color);
-void ssd1306_DrawVLine(uint16_t x0, uint16_t y0, uint16_t y1 , uint16_t color);
-void ssd1306_FillRect(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1 , uint16_t color);
-void ssd1306_DrawBMP(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1 , uint16_t *bmp);
-
+void ssd1306_SetPoint(uint8_t x, uint8_t y, uint8_t pointV);
+void ssd1306_DrawLine(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1 , uint8_t color);
+void ssd1306_DrawHLine(uint8_t x0, uint8_t y0, uint8_t x1 , uint8_t color);
+void ssd1306_DrawVLine(uint8_t x0, uint8_t y0, uint8_t y1 , uint8_t color);
+void ssd1306_FillRect(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1 , uint8_t color);
+void ssd1306_DrawBMP(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1 , uint8_t *bmp);
+void ssd1306_DrawArrImage(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1 , uint8_t *arrImage);
 #endif

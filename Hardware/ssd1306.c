@@ -191,7 +191,36 @@ void ssd1306_Write_String(u8 x, u8 y, u8 *chr)
   }
 }
 
-void ssd1306_SetPoint(uint8_t x, uint8_t y, uint16_t pointV)
+void ssd1306_DrawArrImage(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1 , uint8_t *arrImage)
+{
+	short temp;    
+  uint8_t x,y;
+	uint8_t *pcolor;
+	
+  if( x0 > x1 )  
+  {
+	  temp = x1;
+		x1 = x0;
+		x0 = temp;   
+  }
+  if( y0 > y1 )   
+  {
+		temp = y1;
+		y1 = y0;
+		y0 = temp;   
+  }
+	pcolor = arrImage;
+	for(y = y0 / 8; y <= y1 / 8; y++)
+	{	
+		for(x = x0; x <= x1; x++)
+		{	
+			ssd1306_SRAM[y][x] = *pcolor;
+			pcolor++;
+		}
+	}	
+}
+
+void ssd1306_SetPoint(uint8_t x, uint8_t y, uint8_t pointV)
 {
 	if( x >= MAX_X || y >= MAX_Y )
 	{
@@ -207,7 +236,7 @@ void ssd1306_SetPoint(uint8_t x, uint8_t y, uint16_t pointV)
 /******************************************************************************
 * Description  : Bresenham's line algorithm
 *******************************************************************************/	 
-void ssd1306_DrawLine(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1 , uint16_t color)
+void ssd1306_DrawLine(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1 , uint8_t color)
 {
   short dx,dy;    
   short temp;    
@@ -269,7 +298,7 @@ void ssd1306_DrawLine(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1 , uint1
   }  
   else
   {
-	  temp = 2 * dx - dy;              /* ¿¿½üYÖá */     
+	  temp = 2 * dx - dy;                 
       while( y0 != y1 )
       {
 	 	  ssd1306_SetPoint(x0,y0,color);   
@@ -290,23 +319,23 @@ void ssd1306_DrawLine(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1 , uint1
 
 
 
-void ssd1306_DrawHLine(uint16_t x0, uint16_t y0, uint16_t x1 , uint16_t color)
+void ssd1306_DrawHLine(uint8_t x0, uint8_t y0, uint8_t x1 , uint8_t color)
 {
 	ssd1306_DrawLine(x0, y0, x1, y0, color);
 }
 
-void ssd1306_DrawVLine(uint16_t x0, uint16_t y0, uint16_t y1 , uint16_t color)
+void ssd1306_DrawVLine(uint8_t x0, uint8_t y0, uint8_t y1 , uint8_t color)
 {
 	ssd1306_DrawLine(x0, y0, x0, y1, color);
 }
 
-void ssd1306_FillRect(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1 , uint16_t color)
+void ssd1306_FillRect(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1 , uint8_t color)
 {
-  uint16_t y;
+  uint8_t y;
 	short temp;     
 
 #if 0
-  uint16_t x;
+  uint8_t x;
   if( x0 > x1 )   
   {
 	  temp = x1;
@@ -333,11 +362,11 @@ void ssd1306_FillRect(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1 , uint1
 }
 
 
-void ssd1306_DrawBMP(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1 , uint16_t *bmp)
+void ssd1306_DrawBMP(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1 , uint8_t *bmp)
 {
 	short temp;    
-  uint16_t x,y;
-	uint16_t *pcolor;
+  uint8_t x,y;
+	uint8_t *pcolor;
 	
   if( x0 > x1 )  
   {

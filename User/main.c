@@ -14,7 +14,7 @@ int main() {
 	// OLED_Init();
 	ssd1306_Init();
 	// ssd1306_example();
-	
+	ssd1306_Show_Image();
   while (1)
 	{
 		ugui_example();
