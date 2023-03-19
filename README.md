@@ -9,6 +9,13 @@
   接线事项：
     -- ws2812芯片灯珠输出端口为GPIOB Pin_7
     -- 咪头，声音传感器输入即采集端口为GPIOA Pin_0
+    -- OLED 4针i2c驱动，端口为GPIOB Pin14，Pin15
+    -- ssd1306 7针spi驱动，端口为GPIOA Pin4-Pin7
+       Pin4 - RES
+       Pin5 - D0
+       Pin6 - DC
+       Pin7 - D1
+       板GND- CS
     -- ws2812芯片灯珠、声音传感器均采用5V供电（手机充电头改造）
     -- 所有硬件共地
 2) USER
@@ -17,7 +24,9 @@
   ws2812 -- led灯控制芯片驱动
          -- ws2812.h配置灯珠数量
          -- ws2812_conf.h配置硬件相关参数、数据输出端口
-  OLED   -- 显示器驱动
+  OLED   -- 显示器驱动，4针i2c驱动形式
+  ssd1306-- spi + dma的oled驱动
+         -- ugui的底层函数支持
   mike   -- 咪头麦克风模拟量读取驱动
          -- mike.h配置一次中断周期内采集数据数量
          -- mike_conf.h配置硬件相关参数、数据输入即采集端口
@@ -34,6 +43,8 @@
   延时函数驱动
 9) Test
   一些功能实现暂时放在这里
+10) UGUI
+  一个简洁的图形库
 # 第一版
 第一版主要就是实现ws2812芯片控制的LED灯，相关资料见datasheet文件夹
 
@@ -47,7 +58,10 @@ ws2812灯串连接时，其电源正极要单独供电，负极要和stm32板子
 # 第二版
 实现音量LED灯显示
 
-# 第三版正在进行
+# 第三版
+移植了图形库ugui，采用了spi + dma方式编写了oled驱动
+
+# 第四版正在进行
 1）引入DSP库。
 注意：要配置宏ARM_MATH_CM3（点击魔法棒那个图标，在C/C++里加入；本项目共USE_STDPERIPH_DRIVER,ARM_MATH_CM3, ARM_MATH_MATRIX_CHECK, ARM_MATH_ROUNDING）
 
@@ -74,6 +88,11 @@ FFT频谱
 
 见第二个release
 
+3）第三版
+
+或者
+
+见第三个release
 # 感谢
 https://github.com/Silencer2K/stm32f10x-ws2812b-lib.git
 https://github.com/WangYooNestik/STM32F10X-ADC-FFT.git
