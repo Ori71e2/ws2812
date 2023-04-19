@@ -1,5 +1,5 @@
-#ifndef __OLED_LIBRARY_H
-#define __OLED_LIBRARY_H
+#ifndef _SSD1306_FONT_H
+#define _SSD1306_FONT_H
 
 const u8 YIN_F6X8[] =
     {
