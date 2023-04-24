@@ -52,8 +52,8 @@ void ssd1306_DMA_Init(void)
   DMA_InitTypeDef DMA_InitStructure;
 
   RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA1, ENABLE); //使能 DMA 时钟
-  DMA_DeInit(DMA1_Channel3);
   DMA_Cmd(DMA1_Channel3, DISABLE);
+  DMA_DeInit(DMA1_Channel3);
   DMA_InitStructure.DMA_PeripheralBaseAddr = (u32)&SPI1->DR;              // DMA 外设 ADC 基地址
   DMA_InitStructure.DMA_MemoryBaseAddr = (u32)ssd1306_SRAM;               // DMA 内存基地址
   DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralDST;                      //从储存器读取发送到外设
@@ -71,7 +71,7 @@ void ssd1306_DMA_Init(void)
 }
 void ssd1306_TIM_Init(void)
 {
-  RCC_APB1PeriphClockCmd(SSD1306_APB1_RCC_TIM, ENABLE);    // 使能定时器总线
+  RCC_APB2PeriphClockCmd(SSD1306_APB1_RCC_TIM, ENABLE);    // 使能定时器总线
 
 	TIM_TimeBaseInitTypeDef TIM_TimeBaseInitStructure; 
 	// 1 / 1000000 * 1952  = 0.001952ms，一次计时完整需要的时间
@@ -80,17 +80,18 @@ void ssd1306_TIM_Init(void)
 	TIM_TimeBaseInitStructure.TIM_Prescaler = (SystemCoreClock / SSD1306_FREQUENCY) - 1;  // 定时器预分频器设置
 	TIM_TimeBaseInitStructure.TIM_ClockDivision = TIM_CKD_DIV1;				  // 时钟分频，不分频，TIM2-TIM5是通用定时器，基本定时器不用设置
 	TIM_TimeBaseInitStructure.TIM_CounterMode = TIM_CounterMode_Up;			// 向上扫描
+  TIM_ClearFlag(TIM1, TIM_FLAG_Update);//清中断标志位
 	TIM_TimeBaseInit(SSD1306_TIM, &TIM_TimeBaseInitStructure);
-  TIM_ITConfig(TIM6,TIM_IT_Update, ENABLE);     //使能TIM6中断
-	TIM_Cmd(SSD1306_TIM, ENABLE);
+  TIM_ITConfig(TIM1,TIM_IT_Update, ENABLE);     //使能TIM6中断
 	// ADC_DMA_NVIC_Configuration嵌套向量中断控制器（NVIC）
 
 	NVIC_InitTypeDef NVIC_InitStructure;
-	NVIC_InitStructure.NVIC_IRQChannel = TIM4_IRQn; //SSD1306_TIM_IRQ;
+	NVIC_InitStructure.NVIC_IRQChannel = TIM1_UP_IRQn; //SSD1306_TIM_IRQ;
 	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = SSD1306_IRQ_PRIO;
 	NVIC_InitStructure.NVIC_IRQChannelSubPriority	= SSD1306_IRQ_SUBPRIO;
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
 	NVIC_Init(&NVIC_InitStructure);
+	TIM_Cmd(SSD1306_TIM, ENABLE);
 }
 void ssd1306_SendCmd(u8 TxData) //发送命令
 {
@@ -164,21 +165,26 @@ void ssd1306_Init(void)
 
   ssd1306_SendCmd(0xaf); //开启显示
   ssd1306_SendCmd(0x56);
+  ssd1306_TIM_Init();
   ssd1306_DMA_Init(); // DMA初始化
 }
 void SSD1306_TIM_IRQ_HANDLER(void){
   // ssd1306_SendCmd(0x56);
-	ssd1306_SendData();
-  ssd1306_DMA_Init();
-}
-void DMA1_Channel3_IRQHandler(void)
-{
-	ssd1306_DC_CMD();
-	if(DMA_GetITStatus(DMA1_IT_TC3) != RESET)
+	// ssd1306_SendData();
+	if (TIM_GetITStatus(TIM1, TIM_IT_Update) != RESET)//检查指定的TIM中断发生与否:TIM 中断源 
 	{
-    DMA_ClearITPendingBit(DMA1_IT_TC3);
+		TIM_ClearITPendingBit(TIM1, TIM_IT_Update);//清除TIMx的中断待处理位:TIM 中断源 
+    ssd1306_DMA_Init();
 	}
 }
+// void DMA1_Channel3_IRQHandler(void)
+// {
+// 	ssd1306_DC_CMD();
+// 	if(DMA_GetITStatus(DMA1_IT_TC3) != RESET)
+// 	{
+//     DMA_ClearITPendingBit(DMA1_IT_TC3);
+// 	}
+// }
 
 //指定位置显示单字符，X+Y+单字符
 void ssd1306_Write_Char(u8 x, u8 y, u8 *ascii)
