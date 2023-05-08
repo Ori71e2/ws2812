@@ -3,6 +3,7 @@
 
 #define  MAX_X  128
 #define  MAX_Y  64
+#define  OLED_NUM 2
 #define  ssd1306_Code
 
 #define SSD1306_APB1_RCC_TIM    RCC_APB2Periph_TIM1
@@ -11,7 +12,6 @@
 #define SSD1306_AHB_RCC_DMA     RCC_AHBPeriph_DMA1
 
 #define SSD1306_GPIO            GPIOA
-#define SSD1306_GPIO_PIN        GPIO_Pin_0
 
 #define SSD1306_TIM             TIM1
 #define SSD1306_TIME_BASE_INIT  TIM_TimeBaseInit

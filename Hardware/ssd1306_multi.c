@@ -2,12 +2,14 @@
 #include "delay.h"
 #include "ssd1306.h"
 #include "ssd1306_Font.h"
-#include "ssd1306_conf.h"
+#include "ssd1306_multi_conf.h"
 
-uint8_t ssd1306_SRAMArr[3][MAX_Y / 8][MAX_X]; // 图像储存在SRAM里
+uint8_t ssd1306_SRAMArr[OLED_NUM][MAX_Y / 8][MAX_X]; // 图像储存在SRAM里
 uint8_t ssd1306_SRAM[MAX_Y / 8][MAX_X];
+uint8_t oled_pointer = 0;
+DMA_InitTypeDef DMA_InitStructure;
 // ssd1306屏幕ISP接口初始化
-void ssd1306_IO_Init(void)
+void ssd1306_multi_IO_Init(void)
 {
   GPIO_InitTypeDef GPIO_InitStructure;
   SPI_InitTypeDef SPI_InitStructure;
@@ -18,12 +20,13 @@ void ssd1306_IO_Init(void)
   GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz; // 速度50MHz
   GPIO_Init(GPIOA, &GPIO_InitStructure);            // 初始化PA5(SCL),PA7(SDA)
 
-  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_4 | GPIO_Pin_6;
+  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_4 | GPIO_Pin_6 | GPIO_Pin_8 | GPIO_Pin_9;
   GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;  // 推挽输出
   GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz; // 速度50MHz
   GPIO_Init(GPIOA, &GPIO_InitStructure);            // 初始化PA4(RST),PA6(DC)
 
   GPIO_SetBits(GPIOA, GPIO_Pin_5 | GPIO_Pin_7); // PA5 and PA7上拉
+  GPIO_ResetBits(GPIOA, GPIO_Pin_8 | GPIO_Pin_9);
 
   SPI_InitStructure.SPI_Direction = SPI_Direction_1Line_Tx;           //设置SPI单线只发送
   SPI_InitStructure.SPI_Mode = SPI_Mode_Master;                       //主SPI
@@ -47,15 +50,13 @@ void ssd1306_IO_Init(void)
   SPI_Cmd(SPI1, ENABLE); //使能 SPI 外设
 };
 
-void ssd1306_DMA_Init(void)
+void ssd1306_multi_DMA_Init(void)
 {
-  DMA_InitTypeDef DMA_InitStructure;
-
   RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA1, ENABLE); //使能 DMA 时钟
   DMA_Cmd(DMA1_Channel3, DISABLE);
   DMA_DeInit(DMA1_Channel3);
   DMA_InitStructure.DMA_PeripheralBaseAddr = (u32)&SPI1->DR;              // DMA 外设 ADC 基地址
-  DMA_InitStructure.DMA_MemoryBaseAddr = (u32)ssd1306_SRAM;               // DMA 内存基地址
+  DMA_InitStructure.DMA_MemoryBaseAddr = (u32)ssd1306_SRAMArr[oled_pointer];               // DMA 内存基地址
   DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralDST;                      //从储存器读取发送到外设
   DMA_InitStructure.DMA_BufferSize = MAX_X * MAX_Y / 8;                   // DMA 通道的 DMA 缓存的大小, 128 * 64 / 8 = 1024
   DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;        //外设地址不变
@@ -68,6 +69,7 @@ void ssd1306_DMA_Init(void)
   DMA_Init(DMA1_Channel3, &DMA_InitStructure);                            //根据指定的参数初始化
   // DMA_Cmd(DMA1_Channel3, DISABLE); //不使能DMA1 CH3所指示的通道
   DMA_Cmd(DMA1_Channel3, ENABLE); //使能DMA1 CH3所指示的通道
+	oled_pointer = (oled_pointer + 1) % OLED_NUM;
 }
 void ssd1306_TIM_Init(void)
 {
@@ -93,7 +95,7 @@ void ssd1306_TIM_Init(void)
 	NVIC_Init(&NVIC_InitStructure);
 	TIM_Cmd(SSD1306_TIM, ENABLE);
 }
-void ssd1306_SendCmd(u8 TxData) //发送命令
+void ssd1306_multi_SendCmd(u8 TxData) //发送命令
 {
   ssd1306_DC_CMD(); //命令模式
 
@@ -129,47 +131,49 @@ void ssd1306_SendData(void) //发送命令
 void ssd1306_Init(void)
 {
   ssd1306_IO_Init();  // 端口初始化
+
   delay_ms(10);    // 延时10毫秒稳定端口状态
 
   ssd1306_RST_OFF(); // ssd1306复位
   delay_ms(10);   // 复位延时
   ssd1306_RST_ON();  // 结束复位
 
-  ssd1306_SendCmd(0xae); // 关闭显示
+  ssd1306_multi_SendCmd(0xae); // 关闭显示
 
-  ssd1306_SendCmd(0xd5); // 设置时钟分频因子,震荡频率
-  ssd1306_SendCmd(0x80); // [3:0],分频因子;[7:4],震荡频率
+  ssd1306_multi_SendCmd(0xd5); // 设置时钟分频因子,震荡频率
+  ssd1306_multi_SendCmd(0x80); // [3:0],分频因子;[7:4],震荡频率
 
-  ssd1306_SendCmd(0x81); // 设置对比度
-  ssd1306_SendCmd(0x7f); // 128
+  ssd1306_multi_SendCmd(0x81); // 设置对比度
+  ssd1306_multi_SendCmd(0x7f); // 128
 
-  ssd1306_SendCmd(0x8d); // 设置电荷泵开关
-  ssd1306_SendCmd(0x14); // 开
+  ssd1306_multi_SendCmd(0x8d); // 设置电荷泵开关
+  ssd1306_multi_SendCmd(0x14); // 开
 
-  ssd1306_SendCmd(0x20); // 设置模式
-  ssd1306_SendCmd(0x00); // 设置为水平地址模式
+  ssd1306_multi_SendCmd(0x20); // 设置模式
+  ssd1306_multi_SendCmd(0x00); // 设置为水平地址模式
 
-  ssd1306_SendCmd(0x21); // 设置列地址的起始和结束的位置
-  ssd1306_SendCmd(0x00); // 0
-  ssd1306_SendCmd(0x7f); // 127
+  ssd1306_multi_SendCmd(0x21); // 设置列地址的起始和结束的位置
+  ssd1306_multi_SendCmd(0x00); // 0
+  ssd1306_multi_SendCmd(0x7f); // 127
 
-  ssd1306_SendCmd(0x22); //设置页地址的起始和结束的位置
-  ssd1306_SendCmd(0x00); // 0
-  ssd1306_SendCmd(0x07); // 7
+  ssd1306_multi_SendCmd(0x22); //设置页地址的起始和结束的位置
+  ssd1306_multi_SendCmd(0x00); // 0
+  ssd1306_multi_SendCmd(0x07); // 7
 
-  ssd1306_SendCmd(0xc8); // 0xc9上下反置 0xc8正常
-  ssd1306_SendCmd(0xa1); // 0xa0左右反置 0xa1正常
+  ssd1306_multi_SendCmd(0xc8); // 0xc9上下反置 0xc8正常
+  ssd1306_multi_SendCmd(0xa1); // 0xa0左右反置 0xa1正常
 
-  ssd1306_SendCmd(0xa4); //全局显示开启;0xa4正常,0xa5无视命令点亮全屏
-  ssd1306_SendCmd(0xa6); //设置显示方式;bit0:1,反相显示;0,正常显示
+  ssd1306_multi_SendCmd(0xa4); //全局显示开启;0xa4正常,0xa5无视命令点亮全屏
+  ssd1306_multi_SendCmd(0xa6); //设置显示方式;bit0:1,反相显示;0,正常显示
 
-  ssd1306_SendCmd(0xaf); //开启显示
-  ssd1306_SendCmd(0x56);
+  ssd1306_multi_SendCmd(0xaf); //开启显示
+  ssd1306_multi_SendCmd(0x56);
+	
   ssd1306_TIM_Init();
   ssd1306_DMA_Init(); // DMA初始化
 }
 void SSD1306_TIM_IRQ_HANDLER(void){
-  // ssd1306_SendCmd(0x56);
+  // ssd1306_multi_SendCmd(0x56);
 	// ssd1306_SendData();
 	if (TIM_GetITStatus(TIM1, TIM_IT_Update) != RESET)//检查指定的TIM中断发生与否:TIM 中断源 
 	{
@@ -187,34 +191,34 @@ void SSD1306_TIM_IRQ_HANDLER(void){
 // }
 
 //指定位置显示单字符，X+Y+单字符
-void ssd1306_Write_Char(u8 x, u8 y, u8 *ascii)
+void ssd1306_multi_Write_Char(u8 oled_pointer, u8 x, u8 y, u8 *ascii)
 {
   u8 i = 0, c = *ascii;
 
   for (i = 0; i < 6; i++)
-    ssd1306_SRAM[y][x + i] = YIN_F6X8[(c - 32) * 6 + 1 + i];
+    ssd1306_SRAMArr[oled_pointer % OLED_NUM][y][x + i] = YIN_F6X8[(c - 32) * 6 + 1 + i];
 }
 
 //清屏--全灭
-void ssd1306_Clear(void)
+void ssd1306_multi_Clear(u8 oled_pointer)
 {
   // for (u8 y = 0; y < 7; y++)
   //   for (u8 x = 0; x < 126; x += 6)
   //     ssd1306_Write_String(x, y, (u8 *)' ');
   for (u8 y = 0; y < MAX_Y / 8; y++)
     for (u8 x = 0; x < MAX_X; x++)
-      ssd1306_SRAM[y][x] = 0;
+      ssd1306_SRAMArr[oled_pointer % OLED_NUM][y][x] = 0;
 }
-void ssd1306_Fill_all(void)
+void ssd1306_multi_Fill_all(u8 oled_pointer)
 {
   for (u8 y = 0; y < MAX_Y / 8; y++)
     for (u8 x = 0; x < MAX_X; x++)
-      ssd1306_SRAM[y][x] = 255;
+      ssd1306_SRAMArr[oled_pointer % OLED_NUM][y][x] = 255;
 }
 char ssd1306_String[] = {0}; //字符转化为字符串储存于此数组
 
 //显示多个字符，x+y+字符串
-void ssd1306_Write_String(u8 x, u8 y, u8 *chr)
+void ssd1306_multi_Write_String(u8 oled_pointer, u8 x, u8 y, u8 *chr)
 {
   u8 j = 0;
 
@@ -223,7 +227,7 @@ void ssd1306_Write_String(u8 x, u8 y, u8 *chr)
       u8 c = chr[j];
 
       for (u8 i = 0; i < 6; i++)
-        ssd1306_SRAM[y][x + i] = YIN_F6X8[(c - 32) * 6 + 1 + i];
+        ssd1306_SRAMArr[oled_pointer % OLED_NUM][y][x + i] = YIN_F6X8[(c - 32) * 6 + 1 + i];
 
       x += 6;
 
@@ -237,7 +241,7 @@ void ssd1306_Write_String(u8 x, u8 y, u8 *chr)
   }
 }
 
-void ssd1306_DrawArrImage(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1 , uint8_t *arrImage)
+void ssd1306_multi_DrawArrImage(uint8_t oled_pointer, uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1 , uint8_t *arrImage)
 {
 	short temp;    
   uint8_t x,y;
@@ -260,29 +264,29 @@ void ssd1306_DrawArrImage(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1 , uint8
 	{	
 		for(x = x0; x <= x1; x++)
 		{	
-			ssd1306_SRAM[y][x] = *pcolor;
+			ssd1306_SRAMArr[oled_pointer % OLED_NUM][y][x] = *pcolor;
 			pcolor++;
 		}
 	}	
 }
 
-void ssd1306_SetPoint(uint8_t x, uint8_t y, uint8_t pointV)
+void ssd1306_multi_SetPoint(uint8_t oled_pointer, uint8_t x, uint8_t y, uint8_t pointV)
 {
 	if( x >= MAX_X || y >= MAX_Y )
 	{
 		return;
 	}
 	if(pointV != 0)
-	  ssd1306_SRAM[y / 8][x] |= (0x1 << (y % 8));
+	  ssd1306_SRAMArr[oled_pointer % OLED_NUM][y / 8][x] |= (0x1 << (y % 8));
 	else
-	  ssd1306_SRAM[y / 8][x] &= ~(0x1 << (y % 8));  
+	  ssd1306_SRAMArr[oled_pointer % OLED_NUM][y / 8][x] &= ~(0x1 << (y % 8));  
 	
 }
 
 /******************************************************************************
 * Description  : Bresenham's line algorithm
 *******************************************************************************/	 
-void ssd1306_DrawLine(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1 , uint8_t color)
+void ssd1306_multi_DrawLine(uint8_t oled_pointer, uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1 , uint8_t color)
 {
   short dx,dy;    
   short temp;    
@@ -306,7 +310,7 @@ void ssd1306_DrawLine(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1 , uint8_t c
   {
       do
       { 
-        ssd1306_SetPoint(x0, y0, color);   
+        ssd1306_multi_SetPoint(oled_pointer, x0, y0, color);
         y0++;
       }
       while( y1 >= y0 ); 
@@ -316,7 +320,7 @@ void ssd1306_DrawLine(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1 , uint8_t c
   {
       do
       {
-        ssd1306_SetPoint(x0, y0, color);   
+        ssd1306_multi_SetPoint(oled_pointer, x0, y0, color); 
         x0++;
       }
       while( x1 >= x0 ); 
@@ -328,7 +332,7 @@ void ssd1306_DrawLine(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1 , uint8_t c
 	  temp = 2 * dy - dx;            
       while( x0 != x1 )
       {
-	      ssd1306_SetPoint(x0,y0,color);  
+	      ssd1306_multi_SetPoint(oled_pointer, x0, y0, color); 
 	      x0++;                 
 	      if( temp > 0 )          
 	      {
@@ -340,14 +344,14 @@ void ssd1306_DrawLine(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1 , uint8_t c
 			  temp += 2 * dy;      
 			}     
       }
-      ssd1306_SetPoint(x0,y0,color);
+      ssd1306_multi_SetPoint(oled_pointer, x0, y0, color);
   }  
   else
   {
 	  temp = 2 * dx - dy;                 
       while( y0 != y1 )
       {
-	 	  ssd1306_SetPoint(x0,y0,color);   
+	 	  ssd1306_multi_SetPoint(oled_pointer, x0, y0, color);  
         y0++;           
         if( temp > 0 )       
         {
@@ -359,23 +363,23 @@ void ssd1306_DrawLine(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1 , uint8_t c
           temp += 2 * dy;
 			}
       } 
-      ssd1306_SetPoint(x0,y0,color);
+      ssd1306_multi_SetPoint(oled_pointer, x0, y0, color);
 	}
 } 
 
 
 
-void ssd1306_DrawHLine(uint8_t x0, uint8_t y0, uint8_t x1 , uint8_t color)
+void ssd1306_multi_DrawHLine(uint8_t oled_pointer, uint8_t x0, uint8_t y0, uint8_t x1 , uint8_t color)
 {
-	ssd1306_DrawLine(x0, y0, x1, y0, color);
+	ssd1306_multi_DrawLine(oled_pointer, x0, y0, x1, y0, color);
 }
 
-void ssd1306_DrawVLine(uint8_t x0, uint8_t y0, uint8_t y1 , uint8_t color)
+void ssd1306_multi_DrawVLine(uint8_t oled_pointer, uint8_t x0, uint8_t y0, uint8_t y1 , uint8_t color)
 {
-	ssd1306_DrawLine(x0, y0, x0, y1, color);
+	ssd1306_multi_DrawLine(oled_pointer, x0, y0, x0, y1, color);
 }
 
-void ssd1306_FillRect(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1 , uint8_t color)
+void ssd1306_multi_FillRect(uint8_t oled_pointer, uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1 , uint8_t color)
 {
   uint8_t y;
 	short temp;     
@@ -390,7 +394,7 @@ void ssd1306_FillRect(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1 , uint8_t c
   }
 	for(x = x0; x < x1; x++)
 	{
-		ssd1306_DrawVLine(x, y0, y1, color);
+		ssd1306_multi_DrawVLine(oled_pointer, x, y0, y1, color);
 	}
 #endif
 
@@ -402,13 +406,13 @@ void ssd1306_FillRect(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1 , uint8_t c
   }	
 	for(y = y0; y < y1; y++)
 	{
-		ssd1306_DrawHLine(x0, y, x1, color);
+		ssd1306_multi_DrawHLine(oled_pointer, x0, y, x1, color);
 	}	
 	
 }
 
 
-void ssd1306_DrawBMP(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1 , uint8_t *bmp)
+void ssd1306_multi_DrawBMP(uint8_t oled_pointer, uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1 , uint8_t *bmp)
 {
 	short temp;    
   uint8_t x,y;
@@ -431,7 +435,7 @@ void ssd1306_DrawBMP(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1 , uint8_t *b
 	{	
 		for(x = x0; x < x1; x++)
 		{	
-			ssd1306_SetPoint(x,y,*pcolor ++);
+			ssd1306_multi_SetPoint(oled_pointer, x,y,*pcolor ++);
 		}
 	}	
 }
