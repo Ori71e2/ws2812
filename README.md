@@ -16,6 +16,13 @@
        Pin6 - DC
        Pin7 - D1
        板GND- CS
+    -- ssd1306 多屏驱动 7针spi驱动，端口为GPIOA Pin4-Pin7 Pin8、Pin9
+       Pin4 - RES
+       Pin5 - D0
+       Pin6 - DC
+       Pin7 - D1
+       Pin8 - OLED0 CS
+       Pin9 - OLED1 CS
     -- ws2812芯片灯珠、声音传感器均采用5V供电（手机充电头改造）
     -- 所有硬件共地
 2) USER
