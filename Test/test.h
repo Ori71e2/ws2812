@@ -6,4 +6,7 @@ void led_example(void);
 void ssd1306_example(void);
 void ssd1306_Show_Image(void);
 void ugui_example(void);
+void ssd1306_multi_example(void);
+void ssd1306_multi_Show_Image(void);
+void ugui_multi_example(void);
 #endif

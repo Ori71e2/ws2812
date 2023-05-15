@@ -770,6 +770,26 @@
               <FileType>5</FileType>
               <FilePath>.\Hardware\ssd1306_Font.h</FilePath>
             </File>
+            <File>
+              <FileName>ssd1306_multi.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Hardware\ssd1306_multi.c</FilePath>
+            </File>
+            <File>
+              <FileName>ssd1306_multi_conf.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Hardware\ssd1306_multi_conf.h</FilePath>
+            </File>
+            <File>
+              <FileName>ssd1306_multi.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Hardware\ssd1306_multi.h</FilePath>
+            </File>
+            <File>
+              <FileName>ssd1306_multi_Font.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Hardware\ssd1306_multi_Font.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -819,6 +839,16 @@
               <FileName>ugui_example.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\Test\ugui_example.c</FilePath>
+            </File>
+            <File>
+              <FileName>ssd1306_multi_example.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Test\ssd1306_multi_example.c</FilePath>
+            </File>
+            <File>
+              <FileName>ugui_multi_example.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Test\ugui_multi_example.c</FilePath>
             </File>
           </Files>
         </Group>

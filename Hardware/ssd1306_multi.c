@@ -1,11 +1,10 @@
 #include "stm32f10x.h"
 #include "delay.h"
-#include "ssd1306.h"
-#include "ssd1306_Font.h"
+#include "ssd1306_multi.h"
+#include "ssd1306_multi_Font.h"
 #include "ssd1306_multi_conf.h"
 
 uint8_t ssd1306_SRAMArr[OLED_NUM][MAX_Y / 8][MAX_X]; // 图像储存在SRAM里
-uint8_t ssd1306_SRAM[MAX_Y / 8][MAX_X];
 uint8_t oled_pointer = 0;
 DMA_InitTypeDef DMA_InitStructure;
 // ssd1306屏幕ISP接口初始化
@@ -26,7 +25,7 @@ void ssd1306_multi_IO_Init(void)
   GPIO_Init(GPIOA, &GPIO_InitStructure);            // 初始化PA4(RST),PA6(DC)
 
   GPIO_SetBits(GPIOA, GPIO_Pin_5 | GPIO_Pin_7); // PA5 and PA7上拉
-  GPIO_ResetBits(GPIOA, GPIO_Pin_8 | GPIO_Pin_9);
+  // GPIO_ResetBits(GPIOA, GPIO_Pin_8 | GPIO_Pin_9);
 
   SPI_InitStructure.SPI_Direction = SPI_Direction_1Line_Tx;           //设置SPI单线只发送
   SPI_InitStructure.SPI_Mode = SPI_Mode_Master;                       //主SPI
@@ -68,36 +67,50 @@ void ssd1306_multi_DMA_Init(void)
   DMA_InitStructure.DMA_M2M = DMA_M2M_Disable;                            //非内存到内存传输
   DMA_Init(DMA1_Channel3, &DMA_InitStructure);                            //根据指定的参数初始化
   // DMA_Cmd(DMA1_Channel3, DISABLE); //不使能DMA1 CH3所指示的通道
+	GPIO_ResetBits(GPIOA, GPIO_Pin_8 | GPIO_Pin_9);
+	switch(oled_pointer)
+	{
+		case 0:
+			GPIO_ResetBits(GPIOA, GPIO_Pin_8);
+		  GPIO_SetBits(GPIOA, GPIO_Pin_9);
+			break;
+		case 1:
+			GPIO_ResetBits(GPIOA, GPIO_Pin_9);
+		  GPIO_SetBits(GPIOA, GPIO_Pin_8);
+		  break;
+		default:
+			break;
+	}
   DMA_Cmd(DMA1_Channel3, ENABLE); //使能DMA1 CH3所指示的通道
 	oled_pointer = (oled_pointer + 1) % OLED_NUM;
 }
 void ssd1306_TIM_Init(void)
 {
-  RCC_APB2PeriphClockCmd(SSD1306_APB1_RCC_TIM, ENABLE);    // 使能定时器总线
+  RCC_APB2PeriphClockCmd(SSD1306_MULTI_APB1_RCC_TIM, ENABLE);    // 使能定时器总线
 
 	TIM_TimeBaseInitTypeDef TIM_TimeBaseInitStructure; 
 	// 1 / 1000000 * 1952  = 0.001952ms，一次计时完整需要的时间
 	// 1 / 0.001952 = 512 Hz
-	TIM_TimeBaseInitStructure.TIM_Period = SSD1306_PERIOD - 1;							// 计数器周期，即自动重装载寄存器TIMx_ARR的值，在事件生成时更新到影子寄存器，由TIMx_CR1寄存器的ARPE位配置是否使能缓冲,设置512Hz采样频率
-	TIM_TimeBaseInitStructure.TIM_Prescaler = (SystemCoreClock / SSD1306_FREQUENCY) - 1;  // 定时器预分频器设置
+	TIM_TimeBaseInitStructure.TIM_Period = SSD1306_MULTI_PERIOD - 1;							// 计数器周期，即自动重装载寄存器TIMx_ARR的值，在事件生成时更新到影子寄存器，由TIMx_CR1寄存器的ARPE位配置是否使能缓冲,设置512Hz采样频率
+	TIM_TimeBaseInitStructure.TIM_Prescaler = (SystemCoreClock / SSD1306_MULTI_FREQUENCY) - 1;  // 定时器预分频器设置
 	TIM_TimeBaseInitStructure.TIM_ClockDivision = TIM_CKD_DIV1;				  // 时钟分频，不分频，TIM2-TIM5是通用定时器，基本定时器不用设置
 	TIM_TimeBaseInitStructure.TIM_CounterMode = TIM_CounterMode_Up;			// 向上扫描
   TIM_ClearFlag(TIM1, TIM_FLAG_Update);//清中断标志位
-	TIM_TimeBaseInit(SSD1306_TIM, &TIM_TimeBaseInitStructure);
+	TIM_TimeBaseInit(SSD1306_MULTI_TIM, &TIM_TimeBaseInitStructure);
   TIM_ITConfig(TIM1,TIM_IT_Update, ENABLE);     //使能TIM6中断
 	// ADC_DMA_NVIC_Configuration嵌套向量中断控制器（NVIC）
 
 	NVIC_InitTypeDef NVIC_InitStructure;
 	NVIC_InitStructure.NVIC_IRQChannel = TIM1_UP_IRQn; //SSD1306_TIM_IRQ;
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = SSD1306_IRQ_PRIO;
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority	= SSD1306_IRQ_SUBPRIO;
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = SSD1306_MULTI_IRQ_PRIO;
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority	= SSD1306_MULTI_IRQ_SUBPRIO;
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
 	NVIC_Init(&NVIC_InitStructure);
-	TIM_Cmd(SSD1306_TIM, ENABLE);
+	TIM_Cmd(SSD1306_MULTI_TIM, ENABLE);
 }
 void ssd1306_multi_SendCmd(u8 TxData) //发送命令
 {
-  ssd1306_DC_CMD(); //命令模式
+  ssd1306_multi_DC_CMD(); //命令模式
 
   while (SPI_I2S_GetFlagStatus(SPI1, SPI_I2S_FLAG_TXE) == RESET) //检查指定的 SPI标志位设置与否:发送缓存空标志位
   {
@@ -110,11 +123,11 @@ void ssd1306_multi_SendCmd(u8 TxData) //发送命令
 
   SPI_I2S_SendData(SPI1, TxData); //通过外设 SPIx 发送一个数据
 
-  ssd1306_DC_DAT(); //数据模式
+  ssd1306_multi_DC_DAT(); //数据模式
 }
 void ssd1306_SendData(void) //发送命令
 {
-  ssd1306_DC_CMD(); //命令模式
+  ssd1306_multi_DC_CMD(); //命令模式
 
   while (SPI_I2S_GetFlagStatus(SPI1, SPI_I2S_FLAG_TXE) == RESET) //检查指定的 SPI标志位设置与否:发送缓存空标志位
   {
@@ -125,18 +138,18 @@ void ssd1306_SendData(void) //发送命令
   }
   delay_ms(100);
 
-  ssd1306_DC_DAT(); //数据模式
+  ssd1306_multi_DC_DAT(); //数据模式
 }
 // ssd1306初始化函数
-void ssd1306_Init(void)
+void ssd1306_multi_Init(void)
 {
-  ssd1306_IO_Init();  // 端口初始化
+  ssd1306_multi_IO_Init();  // 端口初始化
 
   delay_ms(10);    // 延时10毫秒稳定端口状态
 
-  ssd1306_RST_OFF(); // ssd1306复位
+  ssd1306_multi_RST_OFF(); // ssd1306复位
   delay_ms(10);   // 复位延时
-  ssd1306_RST_ON();  // 结束复位
+  ssd1306_multi_RST_ON();  // 结束复位
 
   ssd1306_multi_SendCmd(0xae); // 关闭显示
 
@@ -170,20 +183,20 @@ void ssd1306_Init(void)
   ssd1306_multi_SendCmd(0x56);
 	
   ssd1306_TIM_Init();
-  ssd1306_DMA_Init(); // DMA初始化
+  ssd1306_multi_DMA_Init(); // DMA初始化
 }
-void SSD1306_TIM_IRQ_HANDLER(void){
+void SSD1306_MULTI_TIM_IRQ_HANDLER(void){
   // ssd1306_multi_SendCmd(0x56);
 	// ssd1306_SendData();
 	if (TIM_GetITStatus(TIM1, TIM_IT_Update) != RESET)//检查指定的TIM中断发生与否:TIM 中断源 
 	{
 		TIM_ClearITPendingBit(TIM1, TIM_IT_Update);//清除TIMx的中断待处理位:TIM 中断源 
-    ssd1306_DMA_Init();
+    ssd1306_multi_DMA_Init();
 	}
 }
 // void DMA1_Channel3_IRQHandler(void)
 // {
-// 	ssd1306_DC_CMD();
+// 	ssd1306_multi_DC_CMD();
 // 	if(DMA_GetITStatus(DMA1_IT_TC3) != RESET)
 // 	{
 //     DMA_ClearITPendingBit(DMA1_IT_TC3);
@@ -196,7 +209,7 @@ void ssd1306_multi_Write_Char(u8 oled_pointer, u8 x, u8 y, u8 *ascii)
   u8 i = 0, c = *ascii;
 
   for (i = 0; i < 6; i++)
-    ssd1306_SRAMArr[oled_pointer % OLED_NUM][y][x + i] = YIN_F6X8[(c - 32) * 6 + 1 + i];
+    ssd1306_SRAMArr[oled_pointer % OLED_NUM][y][x + i] = MULTI_CHAR_F6X8[(c - 32) * 6 + 1 + i];
 }
 
 //清屏--全灭
@@ -215,7 +228,7 @@ void ssd1306_multi_Fill_all(u8 oled_pointer)
     for (u8 x = 0; x < MAX_X; x++)
       ssd1306_SRAMArr[oled_pointer % OLED_NUM][y][x] = 255;
 }
-char ssd1306_String[] = {0}; //字符转化为字符串储存于此数组
+char ssd1306_multi_String[] = {0}; //字符转化为字符串储存于此数组
 
 //显示多个字符，x+y+字符串
 void ssd1306_multi_Write_String(u8 oled_pointer, u8 x, u8 y, u8 *chr)
@@ -227,7 +240,7 @@ void ssd1306_multi_Write_String(u8 oled_pointer, u8 x, u8 y, u8 *chr)
       u8 c = chr[j];
 
       for (u8 i = 0; i < 6; i++)
-        ssd1306_SRAMArr[oled_pointer % OLED_NUM][y][x + i] = YIN_F6X8[(c - 32) * 6 + 1 + i];
+        ssd1306_SRAMArr[oled_pointer % OLED_NUM][y][x + i] = MULTI_CHAR_F6X8[(c - 32) * 6 + 1 + i];
 
       x += 6;
 
