@@ -101,3 +101,32 @@ void fft_liner_show_led2(void)
 	}
 	pre_num = next_num;
 }
+uint8_t prt = 10;	//量化显示的比例
+void fft_arr_show_led1(void)
+{
+	uint16_t i = 0;
+	uint8_t x = 0;
+	uint8_t y = 0;
+	
+	/*******************显示*******************/
+	for(i = 0; i < 32; i++)	//间隔的取32个频率出来显示
+	{
+		x = (i<<2);	//i*4
+		y = 63-(FFT_Mag[x+1] / prt) - 2;	//加1是为了丢掉第一个直流分量
+		if(y > 63)
+		{
+			y = 63;
+		}
+	// 	GUI_LineWith(x,y,x,63,3,1);
+		
+	// 	//画下落的点
+	// 	if(fall_pot[i]>y) fall_pot[i] = y;
+	// 	else
+	// 	{
+	// 			if(fall_pot[i]>63) fall_pot[i]=63;
+	// 			GUI_LineWith(x,fall_pot[i],x,fall_pot[i]+3,3,1);
+	// 			fall_pot[i] += 2 ;
+	// 	}
+	}
+	// GUI_Exec();
+}

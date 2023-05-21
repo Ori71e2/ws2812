@@ -11,24 +11,24 @@
 #include "ssd1306_multi.h"
 int main() {
 	delay_ms(2000);
-  // led_Init();
-	// mike_Init();
+  led_Init();
+	mike_Init();
 	// OLED_Init();
 	// ssd1306_Init();
 	// ssd1306_example();
-  ssd1306_multi_Init();
+  // ssd1306_multi_Init();
   while (1)
 	{
 		// ssd1306_Show_Image();
 		// ugui_example();
-		ssd1306_multi_Show_Image();
+		// ssd1306_multi_Show_Image();
 		// ssd1306_multi_example();
-		ugui_multi_example();
-		// if(mike_IsCollected())
-		// {
-		// 	mike_StartCollected();
-		// 	FFT_test();
-		// }
+		// ugui_multi_example();
+		if(mike_IsCollected())
+		{
+			mike_StartCollected();
+			FFT_test();
+		}
   }
 }
 
