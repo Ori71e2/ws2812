@@ -31,12 +31,14 @@ void GetPowerMag(void)
 		Mag = sqrt(X * X + Y * Y) / SAMPLS_NUM;
 		
 		if(i == 0)
+		{
 			FFT_Mag[i] = (unsigned long)(Mag * 32768);
-		else
+		}
+			else
+		{
 			FFT_Mag[i] = (unsigned long)(Mag * 65536);
-		//printf("%ld\r\n",lBufMagArray[i]);
+		}
 	}
-	//printf("\r\n\r\n");
 }
 
 // 从adc数据源复制数据
@@ -51,7 +53,7 @@ void Get_FFT_Source_Data()
 		FFT_SourceData[i] = ((int32_t)ADC_SourceData[i]-2048) << 16;
 	}
 }
-
+// 1 ~ 4096  ==减去直流偏置量（ADC采集只能为正值）==> -2048 ~ 2048  ==fft算法转换==> 除数组第一个数据，其他数值范围为0~512（对应64） ==> 供其他使用
 void FFT_test(void)
 {
 	// InitBufInArray();
@@ -64,6 +66,7 @@ void FFT_test(void)
 	// OLED_ShowNum(4, 1, FFT_Mag[31], 5);
 	// OLED_ShowNum(4, 1, ADC_SourceData[30], 5);
 	fft_liner_show_led2();
+	fft_arr_show_oled1();
 }
 
 void Test_Time_Func(void)			//test time

@@ -13,4 +13,5 @@ void GetPowerMag(void);
 void FFT_test(void);
 void fft_liner_show_led1(void);
 void fft_liner_show_led2(void);
+void fft_arr_show_oled1(void);
 #endif
