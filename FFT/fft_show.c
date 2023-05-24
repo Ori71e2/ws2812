@@ -242,7 +242,8 @@ void  GUI_LineWidth(uint32_t x0, uint32_t y0, uint32_t x1, uint32_t y1, uint8_t 
    } 
   
 }
-uint8_t prt = 512 / 64;	//量化显示的比例
+uint8_t fall_pot[SAMPLS_NUM / 2];	//记录下落点的坐标
+uint8_t prt = 4; // 512 / 64;	//量化显示的比例
 void fft_arr_show_oled1(void)
 {
 	uint16_t i = 0;
@@ -250,24 +251,26 @@ void fft_arr_show_oled1(void)
 	uint8_t y = 0;
 	ssd1306_Clear();
 	/*******************显示*******************/
-	for(i = 0; i < 32; i++)	//间隔的取32个频率出来显示
+	for(i = 1; i < 32; i++)	//间隔的取32个频率出来显示
 	{
-		x = (i<<2);	//i*4
-		y = 63 -(FFT_Mag[x+1] / prt) - 2;	//加1是为了丢掉第一个直流分量
+		x = (i<<2) - 4;	//i*4
+		y = 63 -(FFT_Mag[i] / prt);	// 丢掉第一个直流分量
 		if(y > 63)
 		{
 			y = 63;
 		}
+		// ssd1306_DrawVLine(x, 0, y, 1);
+		//ssd1306_DrawVLine(0, 0, 63, 1);
 	  GUI_LineWidth(x,y,x,63,3,1);
 		
-	// 	//画下落的点
-	// 	if(fall_pot[i]>y) fall_pot[i] = y;
-	// 	else
-	// 	{
-	// 			if(fall_pot[i]>63) fall_pot[i]=63;
-	// 			GUI_LineWith(x,fall_pot[i],x,fall_pot[i]+3,3,1);
-	// 			fall_pot[i] += 2 ;
-	// 	}
+		//画下落的点
+		if(fall_pot[i]>y) fall_pot[i] = y;
+		else
+		{
+			if(fall_pot[i]>63) fall_pot[i]=63;
+			GUI_LineWidth(x,fall_pot[i],x,fall_pot[i]+3,3,1);
+			fall_pot[i] += 2 ;
+		}
 	}
 	// GUI_Exec();
 }
